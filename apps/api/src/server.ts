@@ -120,7 +120,7 @@ class Server {
       // Start listening with error handling
       await new Promise<void>((resolve, reject) => {
         this.server = this.app.listen(port, () => {
-          console.log(`✓ API Server is running on port ${port}`);
+          console.log(`✓ API Server is running on port ${port} `);
           console.log(`✓ Environment: ${getEnvironmentDisplayName(getCurrentEnvironment())}`);
           resolve();
         });
