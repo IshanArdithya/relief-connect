@@ -38,7 +38,7 @@ import {
 } from 'lucide-react'
 import LanguageSwitcher from './LanguageSwitcher'
 import { HelpRequestResponseDto } from '@nx-mono-repo-deployment-test/shared/src/dtos/help-request/response/help_request_response_dto'
-import { Urgency, HelpRequestCategory } from '@nx-mono-repo-deployment-test/shared/src/enums'
+import { Urgency } from '@nx-mono-repo-deployment-test/shared/src/enums'
 import {
   SRI_LANKA_PROVINCES,
   SRI_LANKA_DISTRICTS,
@@ -56,7 +56,6 @@ const generateMockData = (): HelpRequestResponseDto[] => {
       id: 1,
       lat: 6.9271,
       lng: 79.8612,
-      category: HelpRequestCategory.FOOD_WATER,
       urgency: Urgency.HIGH,
       shortNote:
         'Name: John Doe, People: 5, Kids: 2, Elders: 2. Items: Food & Water (3), Torch (2)',
@@ -68,7 +67,6 @@ const generateMockData = (): HelpRequestResponseDto[] => {
       id: 2,
       lat: 7.2906,
       lng: 80.6337,
-      category: HelpRequestCategory.OTHER,
       urgency: Urgency.MEDIUM,
       shortNote: 'Name: Jane Smith, People: 3. Items: Canned Foods (5), Noodles (10)',
       approxArea: 'Kandy',
@@ -79,7 +77,6 @@ const generateMockData = (): HelpRequestResponseDto[] => {
       id: 3,
       lat: 6.0329,
       lng: 80.217,
-      category: HelpRequestCategory.FOOD_WATER,
       urgency: Urgency.HIGH,
       shortNote:
         'Name: Kamal Perera, People: 8, Kids: 3, Elders: 3. Items: Food & Water (5), Candle (4), Matches (2)',
@@ -91,7 +88,6 @@ const generateMockData = (): HelpRequestResponseDto[] => {
       id: 4,
       lat: 7.4675,
       lng: 80.6234,
-      category: HelpRequestCategory.OTHER,
       urgency: Urgency.LOW,
       shortNote: 'Name: Nimal Fernando, People: 2. Items: Tissues (3), Diary (1)',
       approxArea: 'Matale',
@@ -102,7 +98,6 @@ const generateMockData = (): HelpRequestResponseDto[] => {
       id: 5,
       lat: 5.9549,
       lng: 80.555,
-      category: HelpRequestCategory.FOOD_WATER,
       urgency: Urgency.MEDIUM,
       shortNote: 'Name: Sunil Silva, People: 4, Kids: 1. Items: Food & Water (2), Noodles (8)',
       approxArea: 'Matara',
@@ -113,7 +108,6 @@ const generateMockData = (): HelpRequestResponseDto[] => {
       id: 6,
       lat: 6.5854,
       lng: 79.9607,
-      category: HelpRequestCategory.OTHER,
       urgency: Urgency.HIGH,
       shortNote:
         'Name: Priya Wickramasinghe, People: 6, Kids: 2, Elders: 2. Items: Torch (3), Candle (5), Matches (3)',
@@ -908,8 +902,6 @@ export default function LandingPage() {
                                 <div className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-xs font-medium">
                                   {requestType}
                                 </div>
-                                <span>•</span>
-                                <span className="text-xs">{request.category || 'General'}</span>
                               </div>
                             </div>
                           </div>

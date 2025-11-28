@@ -25,7 +25,7 @@ import {
   CheckCircle,
 } from 'lucide-react'
 import { HelpRequestResponseDto } from '@nx-mono-repo-deployment-test/shared/src/dtos/help-request/response/help_request_response_dto'
-import { Urgency, HelpRequestCategory, ContactType } from '@nx-mono-repo-deployment-test/shared/src/enums'
+import { Urgency, ContactType } from '@nx-mono-repo-deployment-test/shared/src/enums'
 
 interface DonationRequest {
   id: number
@@ -128,7 +128,6 @@ export default function RequestDetailsPage() {
           id: Number(id),
           lat: 6.9271,
           lng: 79.8612,
-          category: HelpRequestCategory.FOOD_WATER,
           urgency: Urgency.HIGH,
           shortNote:
             'Name: John Doe, People: 5, Kids: 2, Elders: 2. Items: Food & Water (3), Torch (2), Medicine (1)',
@@ -178,7 +177,6 @@ export default function RequestDetailsPage() {
       query: {
         requestId: request.id,
         userName: requestName,
-        category: request.category,
         urgency: request.urgency,
         items: request.shortNote?.match(/Items:\s*(.+)/)?.[1] || '',
         location: request.approxArea || '',
@@ -321,11 +319,6 @@ export default function RequestDetailsPage() {
                 <p className="text-gray-700 ml-7">{items}</p>
               </div>
 
-              {/* Category */}
-              <div>
-                <span className="text-sm font-semibold text-gray-600">Category:</span>{' '}
-                <span className="text-gray-700">{request.category || 'General'}</span>
-              </div>
 
               {/* Contact Info */}
               <div className="flex items-center gap-2">
