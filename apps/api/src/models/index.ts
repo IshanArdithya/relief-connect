@@ -26,6 +26,14 @@ export const initializeAssociations = (): void => {
     foreignKey: RefreshTokenModel.REFRESH_TOKEN_USER_ID, 
     as: 'refreshTokens' 
   });
+
+  // User-HelpRequest association
+  // The @BelongsTo decorator in HelpRequestModel already creates the belongsTo side,
+  // so we only need to set up the hasMany side here
+  UserModel.hasMany(HelpRequestModel, { 
+    foreignKey: HelpRequestModel.HELP_REQUEST_USER_ID, 
+    as: 'helpRequests' 
+  });
 };
 
 // Export individual models (constants are accessible via ItemModel.TABLE_NAME, etc.)
