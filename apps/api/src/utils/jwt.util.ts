@@ -1,14 +1,14 @@
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import { IUser } from '@nx-mono-repo-deployment-test/shared/src/interfaces/user/IUser';
 
 /**
  * JWT utility for token generation and verification
  */
 class JwtUtil {
-  private static readonly SECRET_KEY = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
-  private static readonly ACCESS_TOKEN_EXPIRES_IN = process.env.JWT_ACCESS_TOKEN_EXPIRES_IN || '15m';
-  private static readonly REFRESH_TOKEN_EXPIRES_IN = process.env.JWT_REFRESH_TOKEN_EXPIRES_IN || '7d';
-  private static readonly REFRESH_TOKEN_SECRET = process.env.JWT_REFRESH_SECRET || this.SECRET_KEY + '-refresh';
+  private static readonly SECRET_KEY: string = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+  private static readonly ACCESS_TOKEN_EXPIRES_IN: string = process.env.JWT_ACCESS_TOKEN_EXPIRES_IN || '15m';
+  private static readonly REFRESH_TOKEN_EXPIRES_IN: string = process.env.JWT_REFRESH_TOKEN_EXPIRES_IN || '7d';
+  private static readonly REFRESH_TOKEN_SECRET: string = process.env.JWT_REFRESH_SECRET || (JwtUtil.SECRET_KEY + '-refresh');
 
   /**
    * Generate access token for user (short-lived)
@@ -23,9 +23,11 @@ class JwtUtil {
       type: 'access',
     };
 
-    return jwt.sign(payload, this.SECRET_KEY, {
+    const options: SignOptions = {
       expiresIn: this.ACCESS_TOKEN_EXPIRES_IN,
-    });
+    };
+
+    return jwt.sign(payload, this.SECRET_KEY, options);
   }
 
   /**
@@ -41,9 +43,11 @@ class JwtUtil {
       type: 'refresh',
     };
 
-    return jwt.sign(payload, this.REFRESH_TOKEN_SECRET, {
+    const options: SignOptions = {
       expiresIn: this.REFRESH_TOKEN_EXPIRES_IN,
-    });
+    };
+
+    return jwt.sign(payload, this.REFRESH_TOKEN_SECRET, options);
   }
 
   /**
