@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react'
 import { useRouter } from 'next/router'
+import { useTranslation } from 'next-i18next'
 import {
   Card,
   CardContent,
@@ -34,6 +35,7 @@ import {
   Mail,
   LogOut,
 } from 'lucide-react'
+import LanguageSwitcher from './LanguageSwitcher'
 import { HelpRequestResponseDto } from '@nx-mono-repo-deployment-test/shared/src/dtos/help-request/response/help_request_response_dto'
 import { Urgency, HelpRequestCategory } from '@nx-mono-repo-deployment-test/shared/src/enums'
 import {
@@ -122,6 +124,7 @@ const generateMockData = (): HelpRequestResponseDto[] => {
 
 export default function LandingPage() {
   const router = useRouter()
+  const { t } = useTranslation('common')
   const requestsSectionRef = useRef<HTMLDivElement>(null)
   const [viewMode, setViewMode] = useState<ViewMode>('initial')
   const [userInfo, setUserInfo] = useState<{ name?: string; identifier?: string } | null>(null)
@@ -413,21 +416,21 @@ export default function LandingPage() {
             <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center">
               <User className="w-8 h-8 text-blue-600" />
             </div>
-            <CardTitle className="text-2xl font-bold">Enter Unique Identifier</CardTitle>
+            <CardTitle className="text-2xl font-bold">{t('enterUniqueIdentifier')}</CardTitle>
             <CardDescription className="text-base mt-2">
-              Please enter your email or phone number to continue
+              {t('enterEmailOrPhone')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleIdentifierSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="identifier">Email or Phone Number</Label>
+                <Label htmlFor="identifier">{t('emailOrPhoneNumber')}</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
                     id="identifier"
                     type="text"
-                    placeholder="Enter your email or phone number"
+                    placeholder={t('enterYourEmailOrPhone')}
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
                     className="pl-10 h-12"
@@ -436,7 +439,7 @@ export default function LandingPage() {
                   />
                 </div>
                 <p className="text-xs text-gray-500">
-                  This will be used to identify you on the platform
+                  {t('willBeUsedToIdentify')}
                 </p>
               </div>
 
@@ -445,7 +448,7 @@ export default function LandingPage() {
                 className="w-full h-12 text-base font-semibold"
                 disabled={loading}
               >
-                {loading ? 'Processing...' : 'Continue'}
+                {loading ? t('processing') : t('continue')}
               </Button>
             </form>
           </CardContent>
@@ -464,11 +467,12 @@ export default function LandingPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <h1 className="text-xl md:text-2xl font-bold text-gray-900">
-                  Sri Lanka Crisis Help
+                  {t('appName')}
                 </h1>
               </div>
 
               <div className="flex items-center gap-3">
+                <LanguageSwitcher />
                 {userInfo && (
                   <>
                     <div className="flex items-center gap-2 px-3 py-2 bg-green-50 rounded-lg">
@@ -477,12 +481,12 @@ export default function LandingPage() {
                       </div>
                       <div className="hidden sm:block">
                         <div className="text-sm font-semibold text-gray-900">
-                          {userInfo.name || 'Donor'}
+                          {userInfo.name || t('donor')}
                         </div>
                         <div className="text-xs text-gray-500">{userInfo.identifier}</div>
                       </div>
                     </div>
-                    <Button variant="ghost" size="icon" onClick={handleLogout} title="Logout">
+                    <Button variant="ghost" size="icon" onClick={handleLogout} title={t('logout')}>
                       <LogOut className="h-4 w-4" />
                     </Button>
                   </>
@@ -495,10 +499,10 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 py-8">
           <div className="text-center mb-8">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Connect Those in Need with Those Who Can Help
+              {t('welcome')}
             </h2>
             <p className="text-lg md:text-xl text-gray-600 mb-6">
-              Your support can make a difference
+              {t('subtitle')}
             </p>
 
             {/* Top Action Buttons */}
@@ -511,7 +515,7 @@ export default function LandingPage() {
                   className="h-12 px-6 flex items-center gap-2"
                 >
                   <Package className="h-5 w-5" />
-                  View My Requests
+                  {t('viewMyRequests')}
                 </Button>
               )}
               <Button
@@ -520,7 +524,7 @@ export default function LandingPage() {
               >
                 <span className="relative z-10 flex items-center gap-2">
                   <Map className="h-5 w-5 animate-pulse" />
-                  View Map
+                  {t('viewMap')}
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </Button>
@@ -534,7 +538,7 @@ export default function LandingPage() {
                 <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
                   <HelpCircle className="w-8 h-8 text-red-600" />
                 </div>
-                <CardTitle className="text-2xl font-bold text-gray-900">I Need Help</CardTitle>
+                <CardTitle className="text-2xl font-bold text-gray-900">{t('iNeedHelp')}</CardTitle>
                 <CardDescription className="text-base mt-2">
                   Request assistance for food, medical, rescue, or shelter
                 </CardDescription>
@@ -545,7 +549,7 @@ export default function LandingPage() {
                   className="w-full h-12 text-base font-semibold"
                   size="lg"
                 >
-                  Get Help Now
+                  {t('getHelpNow')}
                 </Button>
               </CardContent>
             </Card>
@@ -556,7 +560,7 @@ export default function LandingPage() {
                 <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
                   <HandHeart className="w-8 h-8 text-green-600" />
                 </div>
-                <CardTitle className="text-2xl font-bold text-gray-900">I Can Help</CardTitle>
+                <CardTitle className="text-2xl font-bold text-gray-900">{t('iCanHelp')}</CardTitle>
                 <CardDescription className="text-base mt-2">
                   View requests and offer assistance to those in need
                 </CardDescription>
@@ -567,7 +571,7 @@ export default function LandingPage() {
                   className="w-full h-12 text-base font-semibold"
                   size="lg"
                 >
-                  View Requests
+                  {t('viewRequests')}
                 </Button>
               </CardContent>
             </Card>
@@ -578,10 +582,10 @@ export default function LandingPage() {
             <Card className="mb-6">
               <CardHeader>
                 <div className="flex items-center justify-between mb-4">
-                  <CardTitle className="text-2xl font-bold">Donation Requests</CardTitle>
+                  <CardTitle className="text-2xl font-bold">{t('donationRequests')}</CardTitle>
                   <Button onClick={handleViewMap} variant="outline">
                     <MapPin className="h-4 w-4 mr-2" />
-                    View on Map
+                    {t('viewOnMap')}
                   </Button>
                 </div>
 
@@ -590,7 +594,7 @@ export default function LandingPage() {
                   <div className="bg-blue-50 p-4 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
                       <AlertCircle className="h-4 w-4 text-blue-600" />
-                      <span className="text-xs font-medium text-blue-600">Total Requests</span>
+                      <span className="text-xs font-medium text-blue-600">{t('totalRequests')}</span>
                     </div>
                     <div className="text-2xl font-bold text-blue-900">
                       {requestsAnalytics.totalRequests}
@@ -599,7 +603,7 @@ export default function LandingPage() {
                   <div className="bg-green-50 p-4 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
                       <Users className="h-4 w-4 text-green-600" />
-                      <span className="text-xs font-medium text-green-600">Total People</span>
+                      <span className="text-xs font-medium text-green-600">{t('totalPeople')}</span>
                     </div>
                     <div className="text-2xl font-bold text-green-900">
                       {requestsAnalytics.totalPeople}
@@ -608,7 +612,7 @@ export default function LandingPage() {
                   <div className="bg-purple-50 p-4 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
                       <Package className="h-4 w-4 text-purple-600" />
-                      <span className="text-xs font-medium text-purple-600">Meals Needed</span>
+                      <span className="text-xs font-medium text-purple-600">{t('mealsNeeded')}</span>
                     </div>
                     <div className="text-2xl font-bold text-purple-900">
                       {requestsAnalytics.totalMealsNeeded}
@@ -617,7 +621,7 @@ export default function LandingPage() {
                   <div className="bg-orange-50 p-4 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
                       <Users className="h-4 w-4 text-orange-600" />
-                      <span className="text-xs font-medium text-orange-600">Children</span>
+                      <span className="text-xs font-medium text-orange-600">{t('children')}</span>
                     </div>
                     <div className="text-2xl font-bold text-orange-900">
                       {requestsAnalytics.totalKids}
@@ -626,7 +630,7 @@ export default function LandingPage() {
                   <div className="bg-pink-50 p-4 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
                       <Users className="h-4 w-4 text-pink-600" />
-                      <span className="text-xs font-medium text-pink-600">Elders</span>
+                      <span className="text-xs font-medium text-pink-600">{t('elders')}</span>
                     </div>
                     <div className="text-2xl font-bold text-pink-900">
                       {requestsAnalytics.totalElders}
@@ -635,7 +639,7 @@ export default function LandingPage() {
                   <div className="bg-teal-50 p-4 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
                       <Heart className="h-4 w-4 text-teal-600" />
-                      <span className="text-xs font-medium text-teal-600">Donations Done</span>
+                      <span className="text-xs font-medium text-teal-600">{t('donationsDone')}</span>
                     </div>
                     <div className="text-2xl font-bold text-teal-900">
                       {requestsAnalytics.donationsDone}
@@ -647,13 +651,13 @@ export default function LandingPage() {
                 <div className="flex flex-wrap items-center gap-3 mb-4">
                   <div className="flex items-center gap-2">
                     <Filter className="h-4 w-4 text-gray-600" />
-                    <span className="text-sm font-medium text-gray-700">Filters:</span>
+                    <span className="text-sm font-medium text-gray-700">{t('filters')}:</span>
                   </div>
 
                   <div className="relative flex-1 min-w-[200px]">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <Input
-                      placeholder="Search requests..."
+                      placeholder={t('searchRequests')}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="pl-10 h-9"
@@ -672,7 +676,7 @@ export default function LandingPage() {
                       })
                     }}
                   >
-                    <option value="">All Provinces</option>
+                    <option value="">{t('allProvinces')}</option>
                     {SRI_LANKA_PROVINCES.map((province) => (
                       <option key={province} value={province}>
                         {province}
@@ -691,7 +695,7 @@ export default function LandingPage() {
                     }
                     disabled={!tempFilters.province}
                   >
-                    <option value="">All Districts</option>
+                    <option value="">{t('allDistricts')}</option>
                     {availableDistricts.map((district) => (
                       <option key={district} value={district}>
                         {district}
@@ -709,10 +713,10 @@ export default function LandingPage() {
                       })
                     }
                   >
-                    <option value="">All Levels</option>
-                    <option value={Urgency.LOW}>Low</option>
-                    <option value={Urgency.MEDIUM}>Medium</option>
-                    <option value={Urgency.HIGH}>High</option>
+                    <option value="">{t('allLevels')}</option>
+                    <option value={Urgency.LOW}>{t('low')}</option>
+                    <option value={Urgency.MEDIUM}>{t('medium')}</option>
+                    <option value={Urgency.HIGH}>{t('high')}</option>
                   </select>
 
                   <select
@@ -727,13 +731,13 @@ export default function LandingPage() {
                       })
                     }
                   >
-                    <option value="">All Types</option>
-                    <option value="individual">Individual</option>
-                    <option value="group">Group</option>
+                    <option value="">{t('allTypes')}</option>
+                    <option value="individual">{t('individual')}</option>
+                    <option value="group">{t('group')}</option>
                   </select>
 
                   <Button onClick={handleApplyFilters} size="sm" className="h-9">
-                    Apply Filters
+                    {t('applyFilters')}
                   </Button>
                 </div>
               </CardHeader>
@@ -744,9 +748,9 @@ export default function LandingPage() {
               <Card>
                 <CardContent className="py-12 text-center">
                   <AlertCircle className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                  <p className="text-lg font-medium mb-2">No requests found</p>
+                  <p className="text-lg font-medium mb-2">{t('noRequestsFound')}</p>
                   <p className="text-sm text-gray-500">
-                    Try adjusting your filters or search query.
+                    {t('tryAdjustingFilters')}
                   </p>
                 </CardContent>
               </Card>
@@ -797,23 +801,23 @@ export default function LandingPage() {
                           <div className="flex items-center gap-2 text-sm text-gray-700">
                             <Users className="h-4 w-4 text-blue-600" />
                             <span className="font-medium">
-                              {request.shortNote?.match(/People:\s*(\d+)/)?.[1] || '1'} people
+                              {request.shortNote?.match(/People:\s*(\d+)/)?.[1] || '1'} {t('people')}
                             </span>
                             {request.shortNote?.match(/Kids:\s*(\d+)/)?.[1] && (
                               <span className="text-gray-500">
-                                ({request.shortNote.match(/Kids:\s*(\d+)/)?.[1]} kids)
+                                ({request.shortNote.match(/Kids:\s*(\d+)/)?.[1]} {t('kids')})
                               </span>
                             )}
                             {request.shortNote?.match(/Elders:\s*(\d+)/)?.[1] && (
                               <span className="text-gray-500">
-                                ({request.shortNote.match(/Elders:\s*(\d+)/)?.[1]} elders)
+                                ({request.shortNote.match(/Elders:\s*(\d+)/)?.[1]} {t('eldersLabel')})
                               </span>
                             )}
                           </div>
                           <div className="flex items-center gap-2 text-sm text-gray-700">
                             <Package className="h-4 w-4 text-purple-600" />
                             <span className="line-clamp-1">
-                              {request.shortNote?.match(/Items:\s*(.+)/)?.[1] || 'Various items'}
+                              {request.shortNote?.match(/Items:\s*(.+)/)?.[1] || t('variousItems')}
                             </span>
                           </div>
                         </div>
@@ -823,53 +827,53 @@ export default function LandingPage() {
                               className="w-full mt-4"
                               onClick={() => setSelectedRequest(request)}
                             >
-                              See Details
+                              {t('seeDetails')}
                             </Button>
                           </DialogTrigger>
                           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                             <DialogHeader>
                               <DialogTitle className="text-2xl">
                                 {request.shortNote?.split(',')[0]?.replace('Name:', '').trim() ||
-                                  'Anonymous Request'}
+                                  t('anonymousRequest')}
                               </DialogTitle>
-                              <DialogDescription>Request Details and Information</DialogDescription>
+                              <DialogDescription>{t('requestDetails')}</DialogDescription>
                             </DialogHeader>
                             <div className="space-y-4 mt-4">
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
                                   <Label className="text-sm font-semibold text-gray-600">
-                                    Location
+                                    {t('location')}
                                   </Label>
-                                  <p className="text-base">{request.approxArea || 'Unknown'}</p>
+                                  <p className="text-base">{request.approxArea || t('unknown')}</p>
                                 </div>
                                 <div>
                                   <Label className="text-sm font-semibold text-gray-600">
-                                    Urgency
+                                    {t('urgency')}
                                   </Label>
-                                  <p className="text-base">{request.urgency || 'Medium'}</p>
+                                  <p className="text-base">{request.urgency || t('medium')}</p>
                                 </div>
                                 <div>
                                   <Label className="text-sm font-semibold text-gray-600">
-                                    Category
+                                    {t('category')}
                                   </Label>
-                                  <p className="text-base">{request.category || 'General'}</p>
+                                  <p className="text-base">{request.category || t('general')}</p>
                                 </div>
                                 <div>
                                   <Label className="text-sm font-semibold text-gray-600">
-                                    Contact Type
+                                    {t('contactType')}
                                   </Label>
                                   <p className="text-base">{request.contactType || 'N/A'}</p>
                                 </div>
                                 <div className="col-span-2">
                                   <Label className="text-sm font-semibold text-gray-600">
-                                    Contact
+                                    {t('contact')}
                                   </Label>
                                   <p className="text-base">{request.contact || 'N/A'}</p>
                                 </div>
                               </div>
                               <div>
                                 <Label className="text-sm font-semibold text-gray-600">
-                                  Full Details
+                                  {t('fullDetails')}
                                 </Label>
                                 <div className="mt-2 p-4 bg-gray-50 rounded-lg">
                                   <p className="text-sm whitespace-pre-wrap">
@@ -880,7 +884,7 @@ export default function LandingPage() {
                               {request.lat && request.lng && (
                                 <div>
                                   <Label className="text-sm font-semibold text-gray-600">
-                                    Coordinates
+                                    {t('coordinates')}
                                   </Label>
                                   <p className="text-sm text-gray-600">
                                     Lat: {request.lat.toFixed(4)}, Lng: {request.lng.toFixed(4)}
@@ -909,9 +913,9 @@ export default function LandingPage() {
         <div className="w-full max-w-4xl">
           <div className="text-center mb-8">
             <Button onClick={handleBack} variant="ghost" className="mb-4">
-              ← Back
+              ← {t('back')}
             </Button>
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">I Need Help</h1>
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">{t('iNeedHelp')}</h1>
             <p className="text-lg md:text-xl text-gray-600">
               Are you requesting help as an individual or as a group?
             </p>
@@ -925,10 +929,10 @@ export default function LandingPage() {
                   <User className="w-8 h-8 text-blue-600" />
                 </div>
                 <CardTitle className="text-2xl font-bold text-gray-900">
-                  I'm an Individual
+                  {t('imAnIndividual')}
                 </CardTitle>
                 <CardDescription className="text-base mt-2">
-                  Request help for yourself or your family
+                  {t('requestHelpForYourself')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-0">
@@ -937,7 +941,7 @@ export default function LandingPage() {
                   className="w-full h-12 text-base font-semibold"
                   size="lg"
                 >
-                  Continue as Individual
+                  {t('continueAsIndividual')}
                 </Button>
               </CardContent>
             </Card>
@@ -948,9 +952,9 @@ export default function LandingPage() {
                 <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center">
                   <Users className="w-8 h-8 text-purple-600" />
                 </div>
-                <CardTitle className="text-2xl font-bold text-gray-900">We're a Group</CardTitle>
+                <CardTitle className="text-2xl font-bold text-gray-900">{t('wereAGroup')}</CardTitle>
                 <CardDescription className="text-base mt-2">
-                  Register your camp or group and share your needs
+                  {t('registerYourCamp')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-0">
@@ -960,7 +964,7 @@ export default function LandingPage() {
                   className="w-full h-12 text-base font-semibold"
                   size="lg"
                 >
-                  Continue as Group
+                  {t('continueAsGroup')}
                 </Button>
               </CardContent>
             </Card>

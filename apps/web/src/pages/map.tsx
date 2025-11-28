@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
+import { useTranslation } from 'next-i18next'
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import dynamic from 'next/dynamic'
 import { Card, CardContent, CardHeader, CardTitle } from 'apps/web/src/components/ui/card'
 import { Button } from 'apps/web/src/components/ui/button'
@@ -22,6 +24,7 @@ const Map = dynamic(() => import('../components/Map'), { ssr: false })
 
 export default function MapDashboard() {
   const router = useRouter()
+  const { t } = useTranslation('common')
   const [helpRequests, setHelpRequests] = useState<HelpRequestResponseDto[]>([])
   const [camps, setCamps] = useState<CampResponseDto[]>([])
   const [loading, setLoading] = useState(true)
@@ -307,11 +310,11 @@ export default function MapDashboard() {
                 className="flex items-center gap-2"
               >
                 <ArrowLeft className="h-4 w-4" />
-                Back
+                {t('back')}
               </Button>
               <div className="flex items-center gap-2">
                 <Filter className="h-5 w-5 text-gray-600" />
-                <span className="font-semibold text-gray-900">Filters</span>
+                <span className="font-semibold text-gray-900">{t('filters')}</span>
               </div>
 
               <div className="flex-1 flex flex-wrap items-center gap-3">
@@ -327,7 +330,7 @@ export default function MapDashboard() {
                     })
                   }}
                 >
-                  <option value="">All Provinces</option>
+                  <option value="">{t('allProvinces')}</option>
                   {SRI_LANKA_PROVINCES.map((province) => (
                     <option key={province} value={province}>
                       {province}
@@ -346,7 +349,7 @@ export default function MapDashboard() {
                   }
                   disabled={!tempFilters.province}
                 >
-                  <option value="">All Districts</option>
+                  <option value="">{t('allDistricts')}</option>
                   {availableDistricts.map((district) => (
                     <option key={district} value={district}>
                       {district}
@@ -364,10 +367,10 @@ export default function MapDashboard() {
                     })
                   }
                 >
-                  <option value="">All Levels</option>
-                  <option value={Urgency.LOW}>Low</option>
-                  <option value={Urgency.MEDIUM}>Medium</option>
-                  <option value={Urgency.HIGH}>High</option>
+                  <option value="">{t('allLevels')}</option>
+                  <option value={Urgency.LOW}>{t('low')}</option>
+                  <option value={Urgency.MEDIUM}>{t('medium')}</option>
+                  <option value={Urgency.HIGH}>{t('high')}</option>
                 </select>
 
                 <select
@@ -380,13 +383,13 @@ export default function MapDashboard() {
                     })
                   }
                 >
-                  <option value="">All Types</option>
-                  <option value="individual">Individual</option>
-                  <option value="group">Group</option>
+                  <option value="">{t('allTypes')}</option>
+                  <option value="individual">{t('individual')}</option>
+                  <option value="group">{t('group')}</option>
                 </select>
 
                 <Button onClick={handleApplyFilters} className="h-10">
-                  Apply Filters
+                  {t('applyFilters')}
                 </Button>
 
                 <Button
@@ -394,7 +397,7 @@ export default function MapDashboard() {
                   onClick={() => router.push('/#requests')}
                   className="h-10"
                 >
-                  View Requests List
+                  {t('viewRequests')}
                 </Button>
               </div>
             </div>
@@ -437,4 +440,12 @@ export default function MapDashboard() {
       </div>
     </>
   )
+}
+
+export async function getServerSideProps({ locale }: { locale: string }) {
+  return {
+    props: {
+      ...(await serverSideTranslations(locale ?? 'en', ['common'])),
+    },
+  }
 }

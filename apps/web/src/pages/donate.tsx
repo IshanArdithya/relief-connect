@@ -1,3 +1,4 @@
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import DonationForm from "../components/DonationForm";
 
 export default function DonatePage() {
@@ -11,4 +12,12 @@ export default function DonatePage() {
       }}
     />
   )
+}
+
+export async function getServerSideProps({ locale }: { locale: string }) {
+  return {
+    props: {
+      ...(await serverSideTranslations(locale ?? 'en', ['common'])),
+    },
+  };
 }

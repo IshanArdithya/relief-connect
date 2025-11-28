@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from 'apps/web/src/components/ui/card'
 import { Button } from 'apps/web/src/components/ui/button'
 import { Input } from 'apps/web/src/components/ui/input'
@@ -125,4 +126,12 @@ export default function LoginPage() {
       </div>
     </>
   )
+}
+
+export async function getServerSideProps({ locale }: { locale: string }) {
+  return {
+    props: {
+      ...(await serverSideTranslations(locale ?? 'en', ['common'])),
+    },
+  }
 }

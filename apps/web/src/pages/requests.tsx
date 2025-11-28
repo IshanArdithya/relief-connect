@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
+import { useTranslation } from 'next-i18next'
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import { Card, CardContent, CardHeader, CardTitle } from 'apps/web/src/components/ui/card'
 import { Button } from 'apps/web/src/components/ui/button'
 import { Input } from 'apps/web/src/components/ui/input'
@@ -101,6 +103,7 @@ const generateMockData = (): HelpRequestResponseDto[] => {
 
 export default function RequestsPage() {
   const router = useRouter()
+  const { t } = useTranslation('common')
   const [helpRequests, setHelpRequests] = useState<HelpRequestResponseDto[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -283,13 +286,13 @@ export default function RequestsPage() {
               <div className="flex items-center gap-4">
                 <Button variant="ghost" onClick={() => router.push('/')}>
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back
+                  {t('back')}
                 </Button>
-                <h1 className="text-2xl font-bold text-gray-900">Donation Requests</h1>
+                <h1 className="text-2xl font-bold text-gray-900">{t('donationRequests')}</h1>
               </div>
               <Button onClick={handleViewMap}>
                 <MapPin className="h-4 w-4 mr-2" />
-                View on Map
+                {t('viewOnMap')}
               </Button>
             </div>
           </div>
@@ -309,21 +312,21 @@ export default function RequestsPage() {
                   <div className="bg-blue-50 p-4 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
                       <AlertCircle className="h-4 w-4 text-blue-600" />
-                      <span className="text-xs font-medium text-blue-600">Total Requests</span>
+                      <span className="text-xs font-medium text-blue-600">{t('totalRequests')}</span>
                     </div>
                     <div className="text-2xl font-bold text-blue-900">{analytics.totalRequests}</div>
                   </div>
                   <div className="bg-green-50 p-4 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
                       <Users className="h-4 w-4 text-green-600" />
-                      <span className="text-xs font-medium text-green-600">Total People</span>
+                      <span className="text-xs font-medium text-green-600">{t('totalPeople')}</span>
                     </div>
                     <div className="text-2xl font-bold text-green-900">{analytics.totalPeople}</div>
                   </div>
                   <div className="bg-purple-50 p-4 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
                       <Package className="h-4 w-4 text-purple-600" />
-                      <span className="text-xs font-medium text-purple-600">Meals Needed</span>
+                      <span className="text-xs font-medium text-purple-600">{t('mealsNeeded')}</span>
                     </div>
                     <div className="text-2xl font-bold text-purple-900">
                       {analytics.totalMealsNeeded}
@@ -332,21 +335,21 @@ export default function RequestsPage() {
                   <div className="bg-orange-50 p-4 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
                       <Users className="h-4 w-4 text-orange-600" />
-                      <span className="text-xs font-medium text-orange-600">Children</span>
+                      <span className="text-xs font-medium text-orange-600">{t('children')}</span>
                     </div>
                     <div className="text-2xl font-bold text-orange-900">{analytics.totalKids}</div>
                   </div>
                   <div className="bg-pink-50 p-4 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
                       <Users className="h-4 w-4 text-pink-600" />
-                      <span className="text-xs font-medium text-pink-600">Elders</span>
+                      <span className="text-xs font-medium text-pink-600">{t('elders')}</span>
                     </div>
                     <div className="text-2xl font-bold text-pink-900">{analytics.totalElders}</div>
                   </div>
                   <div className="bg-teal-50 p-4 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
                       <Heart className="h-4 w-4 text-teal-600" />
-                      <span className="text-xs font-medium text-teal-600">Donations Done</span>
+                      <span className="text-xs font-medium text-teal-600">{t('donationsDone')}</span>
                     </div>
                     <div className="text-2xl font-bold text-teal-900">{analytics.donationsDone}</div>
                   </div>
@@ -365,7 +368,7 @@ export default function RequestsPage() {
             <CardHeader>
               <div className="flex items-center gap-2 mb-4">
                 <Filter className="h-5 w-5 text-gray-600" />
-                <CardTitle className="text-lg font-semibold">Filters</CardTitle>
+                <CardTitle className="text-lg font-semibold">{t('filters')}</CardTitle>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 <div className="space-y-2">
@@ -374,7 +377,7 @@ export default function RequestsPage() {
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <Input
                       id="search"
-                      placeholder="Search requests..."
+                      placeholder={t('searchRequests')}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="pl-10"
@@ -396,7 +399,7 @@ export default function RequestsPage() {
                       })
                     }}
                   >
-                    <option value="">All Provinces</option>
+                    <option value="">{t('allProvinces')}</option>
                     {SRI_LANKA_PROVINCES.map((province) => (
                       <option key={province} value={province}>
                         {province}
@@ -418,7 +421,7 @@ export default function RequestsPage() {
                     }
                     disabled={!tempFilters.province}
                   >
-                    <option value="">All Districts</option>
+                    <option value="">{t('allDistricts')}</option>
                     {availableDistricts.map((district) => (
                       <option key={district} value={district}>
                         {district}
@@ -439,10 +442,10 @@ export default function RequestsPage() {
                       })
                     }
                   >
-                    <option value="">All Levels</option>
-                    <option value={Urgency.LOW}>Low</option>
-                    <option value={Urgency.MEDIUM}>Medium</option>
-                    <option value={Urgency.HIGH}>High</option>
+                    <option value="">{t('allLevels')}</option>
+                    <option value={Urgency.LOW}>{t('low')}</option>
+                    <option value={Urgency.MEDIUM}>{t('medium')}</option>
+                    <option value={Urgency.HIGH}>{t('high')}</option>
                   </select>
                 </div>
 
@@ -458,15 +461,15 @@ export default function RequestsPage() {
                       })
                     }
                   >
-                    <option value="">All Types</option>
-                    <option value="individual">Individual</option>
-                    <option value="group">Group</option>
+                    <option value="">{t('allTypes')}</option>
+                    <option value="individual">{t('individual')}</option>
+                    <option value="group">{t('group')}</option>
                   </select>
                 </div>
               </div>
               <div className="mt-4 flex justify-end">
                 <Button onClick={handleApplyFilters} className="w-full sm:w-auto">
-                  Apply Filters
+                  {t('applyFilters')}
                 </Button>
               </div>
             </CardHeader>
@@ -481,8 +484,8 @@ export default function RequestsPage() {
             <Card>
               <CardContent className="py-12 text-center">
                 <AlertCircle className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                <p className="text-lg font-medium mb-2">No requests found</p>
-                <p className="text-sm text-gray-500">Try adjusting your filters or search query.</p>
+                <p className="text-lg font-medium mb-2">{t('noRequestsFound')}</p>
+                <p className="text-sm text-gray-500">{t('tryAdjustingFilters')}</p>
               </CardContent>
             </Card>
           ) : (
@@ -562,5 +565,13 @@ export default function RequestsPage() {
       </div>
     </>
   )
+}
+
+export async function getServerSideProps({ locale }: { locale: string }) {
+  return {
+    props: {
+      ...(await serverSideTranslations(locale ?? 'en', ['common'])),
+    },
+  }
 }
 

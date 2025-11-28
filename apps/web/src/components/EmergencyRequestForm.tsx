@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/router'
+import { useTranslation } from 'next-i18next'
 import {
   Card,
   CardContent,
@@ -58,6 +59,7 @@ export default function EmergencyRequestForm({
   isGroup = false,
 }: EmergencyRequestFormProps) {
   const router = useRouter()
+  const { t } = useTranslation('common')
   const [currentStep, setCurrentStep] = useState<FormStep>(1)
   const [formData, setFormData] = useState<FormData>({
     name: '',
@@ -93,15 +95,15 @@ export default function EmergencyRequestForm({
     if (currentStep === 1) {
       // Validate step 1
       if (!formData.name.trim()) {
-        setError('Name is required')
+        setError(t('nameIsRequired'))
         return
       }
       if (!formData.contactNumber.trim()) {
-        setError('Contact number is required')
+        setError(t('contactNumberIsRequired'))
         return
       }
       if (!formData.gpsLocation.lat || !formData.gpsLocation.lng) {
-        setError('GPS location is required')
+        setError(t('gpsLocationIsRequired'))
         return
       }
     }
@@ -187,7 +189,7 @@ export default function EmergencyRequestForm({
           {/* Progress Indicator */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-600">Step 1 of 3</span>
+              <span className="text-sm font-medium text-gray-600">{t('step')} 1 {t('of')} 3</span>
               <span className="text-sm text-gray-500">33%</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
@@ -197,23 +199,23 @@ export default function EmergencyRequestForm({
 
           <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle className="text-xl font-bold">Personal Information</CardTitle>
-              <CardDescription>Enter your details and location</CardDescription>
+              <CardTitle className="text-xl font-bold">{t('personalInformation')}</CardTitle>
+              <CardDescription>{t('enterYourDetailsAndLocation')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Name *</Label>
+                <Label htmlFor="name">{t('name')} *</Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Enter your name"
+                  placeholder={t('name')}
                   className="w-full"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="contactNumber">Contact Number *</Label>
+                <Label htmlFor="contactNumber">{t('contactNumber')} *</Label>
                 <Input
                   id="contactNumber"
                   type="tel"
@@ -225,7 +227,7 @@ export default function EmergencyRequestForm({
               </div>
 
               <div className="space-y-2">
-                <Label>Are you requesting for multiple people?</Label>
+                <Label>{t('areYouRequestingForMultiplePeople')}</Label>
                 <div className="flex gap-2">
                   <Button
                     type="button"
@@ -233,7 +235,7 @@ export default function EmergencyRequestForm({
                     onClick={() => setFormData({ ...formData, isIndividual: true })}
                     className="flex-1"
                   >
-                    Individual
+                    {t('individual')}
                   </Button>
                   <Button
                     type="button"
@@ -241,7 +243,7 @@ export default function EmergencyRequestForm({
                     onClick={() => setFormData({ ...formData, isIndividual: false })}
                     className="flex-1"
                   >
-                    Multiple People
+                    {t('multiplePeople')}
                   </Button>
                 </div>
               </div>
@@ -251,8 +253,8 @@ export default function EmergencyRequestForm({
                   <CardContent className="pt-4 space-y-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <Label className="text-base font-medium">Elders</Label>
-                        <p className="text-sm text-gray-500">Adults (18+)</p>
+                        <Label className="text-base font-medium">{t('elders')}</Label>
+                        <p className="text-sm text-gray-500">{t('adults')}</p>
                       </div>
                       <div className="flex items-center gap-3">
                         <Button
@@ -278,8 +280,8 @@ export default function EmergencyRequestForm({
 
                     <div className="flex items-center justify-between">
                       <div>
-                        <Label className="text-base font-medium">Children</Label>
-                        <p className="text-sm text-gray-500">Under 18 years</p>
+                        <Label className="text-base font-medium">{t('childrenLabel')}</Label>
+                        <p className="text-sm text-gray-500">{t('under18Years')}</p>
                       </div>
                       <div className="flex items-center gap-3">
                         <Button
@@ -305,8 +307,8 @@ export default function EmergencyRequestForm({
 
                     <div className="flex items-center justify-between">
                       <div>
-                        <Label className="text-base font-medium">Pets</Label>
-                        <p className="text-sm text-gray-500">Number of pets</p>
+                        <Label className="text-base font-medium">{t('pets')}</Label>
+                        <p className="text-sm text-gray-500">{t('numberOfPets')}</p>
                       </div>
                       <div className="flex items-center gap-3">
                         <Button
@@ -334,10 +336,10 @@ export default function EmergencyRequestForm({
               )}
 
               <div className="space-y-2">
-                <Label>GPS Current Location *</Label>
+                <Label>{t('gpsLocation')} *</Label>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1">
-                    <Label htmlFor="latitude" className="text-xs">Latitude</Label>
+                    <Label htmlFor="latitude" className="text-xs">{t('latitude')}</Label>
                     <Input
                       id="latitude"
                       type="number"
@@ -353,7 +355,7 @@ export default function EmergencyRequestForm({
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label htmlFor="longitude" className="text-xs">Longitude</Label>
+                    <Label htmlFor="longitude" className="text-xs">{t('longitude')}</Label>
                     <Input
                       id="longitude"
                       type="number"
@@ -380,29 +382,29 @@ export default function EmergencyRequestForm({
                           handleLocationChange(position.coords.latitude, position.coords.longitude)
                         },
                         () => {
-                          alert('Unable to get your location. Please enter coordinates manually.')
+                          alert(t('unableToGetLocation'))
                         }
                       )
                     } else {
-                      alert('Geolocation is not supported by your browser. Please enter coordinates manually.')
+                      alert(t('geolocationNotSupported'))
                     }
                   }}
                 >
                   <MapPin className="mr-2 h-4 w-4" />
-                  Get Current Location
+                  {t('getCurrentLocation')}
                 </Button>
                 <p className="text-xs text-gray-500">
-                  Or enter coordinates manually (default: Sri Lanka center)
+                  {t('orEnterCoordinatesManually')}
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="notes">Add Notes (optional)</Label>
+                <Label htmlFor="notes">{t('notes')} ({t('optional')})</Label>
                 <Textarea
                   id="notes"
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder="Any additional information..."
+                  placeholder={t('anyAdditionalInformation')}
                   rows={5}
                   className="w-full"
                 />
@@ -412,10 +414,10 @@ export default function EmergencyRequestForm({
 
               <div className="flex gap-3 pt-4">
                 <Button type="button" variant="outline" onClick={handleBack} className="flex-1">
-                  Back
+                  {t('previous')}
                 </Button>
                 <Button type="button" onClick={handleNext} className="flex-1">
-                  Next
+                  {t('next')}
                 </Button>
               </div>
             </CardContent>
@@ -433,7 +435,7 @@ export default function EmergencyRequestForm({
           {/* Progress Indicator */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-600">Step 2 of 3</span>
+              <span className="text-sm font-medium text-gray-600">{t('step')} 2 {t('of')} 3</span>
               <span className="text-sm text-gray-500">67%</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
@@ -443,8 +445,8 @@ export default function EmergencyRequestForm({
 
           <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle className="text-xl font-bold">Requested Items</CardTitle>
-              <CardDescription>Select the items you need</CardDescription>
+              <CardTitle className="text-xl font-bold">{t('rationItems')}</CardTitle>
+              <CardDescription>{t('selectItemsYouNeed')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {RATION_ITEMS.map((item) => {
@@ -495,7 +497,7 @@ export default function EmergencyRequestForm({
                     className="w-4 h-4"
                   />
                   <Label htmlFor="urgent" className="cursor-pointer">
-                    Urgent (e.g., medical emergency)
+                    {t('urgent')} (e.g., medical emergency)
                   </Label>
                 </div>
               </div>
@@ -504,10 +506,10 @@ export default function EmergencyRequestForm({
 
               <div className="flex gap-3 pt-4">
                 <Button type="button" variant="outline" onClick={handleBack} className="flex-1">
-                  Back
+                  {t('previous')}
                 </Button>
                 <Button type="button" onClick={handleNext} className="flex-1">
-                  Next
+                  {t('next')}
                 </Button>
               </div>
             </CardContent>
@@ -558,14 +560,14 @@ export default function EmergencyRequestForm({
                     onClick={() => router.push('/')}
                     className="w-full"
                   >
-                    Go to your Request
+                    {t('goToYourRequest')}
                   </Button>
                   <Button
                     type="button"
                     onClick={() => router.push('/help')}
                     className="w-full"
                   >
-                    See All Requests
+                    {t('seeAllRequests')}
                   </Button>
                 </div>
               </CardContent>
@@ -592,8 +594,8 @@ export default function EmergencyRequestForm({
 
           <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle className="text-xl font-bold">Confirm Data</CardTitle>
-              <CardDescription>Review your request details</CardDescription>
+              <CardTitle className="text-xl font-bold">{t('confirmData')}</CardTitle>
+              <CardDescription>{t('reviewYourRequestDetails')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -620,7 +622,7 @@ export default function EmergencyRequestForm({
 
               <div className="pt-4 space-y-3">
                 <div className="text-center text-lg font-medium">
-                  Are you sure you want to publish this request?
+                  {t('areYouSureYouWantToPublish')}
                 </div>
 
                 {error && <div className="text-red-600 text-sm text-center">{error}</div>}
@@ -633,7 +635,7 @@ export default function EmergencyRequestForm({
                     disabled={isSubmitting}
                     className="flex-1"
                   >
-                    No
+                    {t('dontPublish')}
                   </Button>
                   <Button
                     type="button"
@@ -641,13 +643,13 @@ export default function EmergencyRequestForm({
                     disabled={isSubmitting}
                     className="flex-1"
                   >
-                    {isSubmitting ? 'Publishing...' : 'Yes'}
+                    {isSubmitting ? t('publishing') : t('publishRequest')}
                   </Button>
                 </div>
               </div>
 
               <Button type="button" variant="ghost" onClick={handleBack} className="w-full">
-                Back
+                {t('previous')}
               </Button>
             </CardContent>
           </Card>

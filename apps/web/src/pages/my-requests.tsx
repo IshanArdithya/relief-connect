@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
+import { useTranslation } from 'next-i18next'
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import { Card, CardContent, CardHeader, CardTitle } from 'apps/web/src/components/ui/card'
 import { Button } from 'apps/web/src/components/ui/button'
 import { Label } from 'apps/web/src/components/ui/label'
@@ -154,6 +156,7 @@ const dummyVictimRequests: VictimRequest[] = [
 
 export default function MyRequestsPage() {
   const router = useRouter()
+  const { t } = useTranslation('common')
   const [activeTab, setActiveTab] = useState<RequestType>('donor')
   const [userInfo, setUserInfo] = useState<{ name?: string; identifier?: string } | null>(null)
 
@@ -195,6 +198,21 @@ export default function MyRequestsPage() {
     }
   }
 
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return t('statusPending')
+      case 'in_progress':
+        return t('statusInProgress')
+      case 'completed':
+        return t('statusCompleted')
+      case 'cancelled':
+        return t('statusCancelled')
+      default:
+        return status.charAt(0).toUpperCase() + status.slice(1)
+    }
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
@@ -228,9 +246,9 @@ export default function MyRequestsPage() {
               <div className="flex items-center gap-4">
                 <Button variant="ghost" size="sm" onClick={() => router.push('/')}>
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back
+                  {t('back')}
                 </Button>
-                <h1 className="text-xl md:text-2xl font-bold text-gray-900">My Requests</h1>
+                <h1 className="text-xl md:text-2xl font-bold text-gray-900">{t('myRequests')}</h1>
               </div>
             </div>
           </div>
@@ -249,7 +267,7 @@ export default function MyRequestsPage() {
             >
               <div className="flex items-center gap-2">
                 <Package className="h-5 w-5" />
-                <span>My Donations ({dummyDonorRequests.length})</span>
+                <span>{t('myDonations')} ({dummyDonorRequests.length})</span>
               </div>
             </button>
             <button
@@ -262,7 +280,7 @@ export default function MyRequestsPage() {
             >
               <div className="flex items-center gap-2">
                 <HelpCircle className="h-5 w-5" />
-                <span>My Help Requests ({dummyVictimRequests.length})</span>
+                <span>{t('myHelpRequests')} ({dummyVictimRequests.length})</span>
               </div>
             </button>
           </div>
@@ -274,9 +292,9 @@ export default function MyRequestsPage() {
                 <Card>
                   <CardContent className="py-12 text-center">
                     <Package className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                    <p className="text-lg font-medium mb-2">No donations yet</p>
+                    <p className="text-lg font-medium mb-2">{t('noDonationsYet')}</p>
                     <p className="text-sm text-gray-500">
-                      Start helping by viewing available requests
+                      {t('startHelpingByViewing')}
                     </p>
                   </CardContent>
                 </Card>
@@ -298,7 +316,7 @@ export default function MyRequestsPage() {
                             )}`}
                           >
                             {getStatusIcon(request.status)}
-                            {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                            {getStatusText(request.status)}
                           </div>
                         </div>
                         <div className="absolute bottom-3 left-3 right-3">
@@ -326,60 +344,60 @@ export default function MyRequestsPage() {
                             </div>
                             <div className="flex items-center gap-2 text-sm text-gray-700">
                               <Calendar className="h-4 w-4 text-blue-600" />
-                              <span>Donated: {request.donatedDate}</span>
+                              <span>{t('donated')}: {request.donatedDate}</span>
                             </div>
                           </div>
                           <Dialog>
                             <DialogTrigger asChild>
-                              <Button className="w-full mt-4">See Details</Button>
+                              <Button className="w-full mt-4">{t('seeDetails')}</Button>
                             </DialogTrigger>
                             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                               <DialogHeader>
-                                <DialogTitle className="text-2xl">Donation Details</DialogTitle>
-                                <DialogDescription>Information about your donation</DialogDescription>
+                                <DialogTitle className="text-2xl">{t('donationDetails')}</DialogTitle>
+                                <DialogDescription>{t('informationAboutYourDonation')}</DialogDescription>
                               </DialogHeader>
                               <div className="space-y-4 mt-4">
                                 <div className="grid grid-cols-2 gap-4">
                                   <div>
                                     <Label className="text-sm font-semibold text-gray-600">
-                                      Request Title
+                                      {t('requestTitle')}
                                     </Label>
                                     <p className="text-base">{request.requestTitle}</p>
                                   </div>
                                   <div>
                                     <Label className="text-sm font-semibold text-gray-600">
-                                      Status
+                                      {t('status')}
                                     </Label>
                                     <p className="text-base capitalize">{request.status}</p>
                                   </div>
                                   <div>
                                     <Label className="text-sm font-semibold text-gray-600">
-                                      Location
+                                      {t('location')}
                                     </Label>
                                     <p className="text-base">{request.location}</p>
                                   </div>
                                   <div>
                                     <Label className="text-sm font-semibold text-gray-600">
-                                      Category
+                                      {t('category')}
                                     </Label>
                                     <p className="text-base">{request.category}</p>
                                   </div>
                                   <div>
                                     <Label className="text-sm font-semibold text-gray-600">
-                                      Donated Date
+                                      {t('donatedDate')}
                                     </Label>
                                     <p className="text-base">{request.donatedDate}</p>
                                   </div>
                                   <div>
                                     <Label className="text-sm font-semibold text-gray-600">
-                                      Urgency
+                                      {t('urgency')}
                                     </Label>
                                     <p className="text-base">{request.urgency}</p>
                                   </div>
                                 </div>
                                 <div>
                                   <Label className="text-sm font-semibold text-gray-600">
-                                    Donated Items
+                                    {t('donatedItems')}
                                   </Label>
                                   <div className="mt-2 p-4 bg-gray-50 rounded-lg">
                                     <p className="text-sm">{request.donatedItems}</p>
@@ -387,7 +405,7 @@ export default function MyRequestsPage() {
                                 </div>
                                 <div>
                                   <Label className="text-sm font-semibold text-gray-600">
-                                    Request Details
+                                    {t('requestDetails')}
                                   </Label>
                                   <div className="mt-2 p-4 bg-gray-50 rounded-lg">
                                     <p className="text-sm whitespace-pre-wrap">{request.shortNote}</p>
@@ -395,7 +413,7 @@ export default function MyRequestsPage() {
                                 </div>
                                 <div>
                                   <Label className="text-sm font-semibold text-gray-600">
-                                    Contact Information
+                                    {t('contactInformation')}
                                   </Label>
                                   <p className="text-base">
                                     {request.contactType}: {request.contact}
@@ -420,9 +438,9 @@ export default function MyRequestsPage() {
                 <Card>
                   <CardContent className="py-12 text-center">
                     <HelpCircle className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                    <p className="text-lg font-medium mb-2">No help requests yet</p>
+                    <p className="text-lg font-medium mb-2">{t('noHelpRequestsYet')}</p>
                     <p className="text-sm text-gray-500">
-                      Create a request to get assistance from donors
+                      {t('createRequestToGetAssistance')}
                     </p>
                   </CardContent>
                 </Card>
@@ -444,7 +462,7 @@ export default function MyRequestsPage() {
                             )}`}
                           >
                             {getStatusIcon(request.status)}
-                            {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                            {getStatusText(request.status)}
                           </div>
                         </div>
                         <div className="absolute bottom-3 left-3 right-3">
@@ -468,7 +486,7 @@ export default function MyRequestsPage() {
                           <div className="space-y-2">
                             <div className="flex items-center gap-2 text-sm text-gray-700">
                               <Users className="h-4 w-4 text-blue-600" />
-                              <span className="font-medium">{request.peopleCount} people</span>
+                              <span className="font-medium">{request.peopleCount} {t('people')}</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm text-gray-700">
                               <Package className="h-4 w-4 text-purple-600" />
@@ -476,68 +494,68 @@ export default function MyRequestsPage() {
                             </div>
                             <div className="flex items-center gap-2 text-sm text-gray-700">
                               <Calendar className="h-4 w-4 text-blue-600" />
-                              <span>Created: {request.createdDate}</span>
+                              <span>{t('created')}: {request.createdDate}</span>
                             </div>
                           </div>
                           <Dialog>
                             <DialogTrigger asChild>
-                              <Button className="w-full mt-4">See Details</Button>
+                              <Button className="w-full mt-4">{t('seeDetails')}</Button>
                             </DialogTrigger>
                             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                               <DialogHeader>
-                                <DialogTitle className="text-2xl">Help Request Details</DialogTitle>
+                                <DialogTitle className="text-2xl">{t('helpRequestDetails')}</DialogTitle>
                                 <DialogDescription>
-                                  Information about your help request
+                                  {t('informationAboutYourRequest')}
                                 </DialogDescription>
                               </DialogHeader>
                               <div className="space-y-4 mt-4">
                                 <div className="grid grid-cols-2 gap-4">
                                   <div>
                                     <Label className="text-sm font-semibold text-gray-600">
-                                      Title
+                                      {t('title')}
                                     </Label>
                                     <p className="text-base">{request.title}</p>
                                   </div>
                                   <div>
                                     <Label className="text-sm font-semibold text-gray-600">
-                                      Status
+                                      {t('status')}
                                     </Label>
                                     <p className="text-base capitalize">{request.status}</p>
                                   </div>
                                   <div>
                                     <Label className="text-sm font-semibold text-gray-600">
-                                      Location
+                                      {t('location')}
                                     </Label>
                                     <p className="text-base">{request.location}</p>
                                   </div>
                                   <div>
                                     <Label className="text-sm font-semibold text-gray-600">
-                                      Category
+                                      {t('category')}
                                     </Label>
                                     <p className="text-base">{request.category}</p>
                                   </div>
                                   <div>
                                     <Label className="text-sm font-semibold text-gray-600">
-                                      Created Date
+                                      {t('createdDate')}
                                     </Label>
                                     <p className="text-base">{request.createdDate}</p>
                                   </div>
                                   <div>
                                     <Label className="text-sm font-semibold text-gray-600">
-                                      Urgency
+                                      {t('urgency')}
                                     </Label>
                                     <p className="text-base">{request.urgency}</p>
                                   </div>
                                 </div>
                                 <div>
                                   <Label className="text-sm font-semibold text-gray-600">
-                                    People Count
+                                    {t('peopleCount')}
                                   </Label>
-                                  <p className="text-base">{request.peopleCount} people</p>
+                                  <p className="text-base">{request.peopleCount} {t('people')}</p>
                                 </div>
                                 <div>
                                   <Label className="text-sm font-semibold text-gray-600">
-                                    Required Items
+                                    {t('requiredItems')}
                                   </Label>
                                   <div className="mt-2 p-4 bg-gray-50 rounded-lg">
                                     <p className="text-sm">{request.items}</p>
@@ -545,7 +563,7 @@ export default function MyRequestsPage() {
                                 </div>
                                 <div>
                                   <Label className="text-sm font-semibold text-gray-600">
-                                    Full Details
+                                    {t('fullDetails')}
                                   </Label>
                                   <div className="mt-2 p-4 bg-gray-50 rounded-lg">
                                     <p className="text-sm whitespace-pre-wrap">{request.shortNote}</p>
@@ -553,7 +571,7 @@ export default function MyRequestsPage() {
                                 </div>
                                 <div>
                                   <Label className="text-sm font-semibold text-gray-600">
-                                    Contact Information
+                                    {t('contactInformation')}
                                   </Label>
                                   <p className="text-base">
                                     {request.contactType}: {request.contact}
@@ -574,5 +592,13 @@ export default function MyRequestsPage() {
       </div>
     </>
   )
+}
+
+export async function getServerSideProps({ locale }: { locale: string }) {
+  return {
+    props: {
+      ...(await serverSideTranslations(locale ?? 'en', ['common'])),
+    },
+  }
 }
 

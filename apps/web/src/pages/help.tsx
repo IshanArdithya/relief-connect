@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import MapFilters from '../components/MapFilters';
 import SafetyBanner from '../components/SafetyBanner';
 import { helpRequestService, campService } from '../services';
@@ -89,5 +90,13 @@ export default function Help() {
       </main>
     </div>
   );
+}
+
+export async function getServerSideProps({ locale }: { locale: string }) {
+  return {
+    props: {
+      ...(await serverSideTranslations(locale ?? 'en', ['common'])),
+    },
+  };
 }
 
