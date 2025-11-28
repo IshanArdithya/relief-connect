@@ -12,7 +12,7 @@ import { Button } from 'apps/web/src/components/ui/button'
 import { Input } from 'apps/web/src/components/ui/input'
 import { Label } from 'apps/web/src/components/ui/label'
 import { Textarea } from 'apps/web/src/components/ui/textarea'
-// import LocationPicker from './LocationPicker' // Temporarily disabled - will integrate later
+import MapLocationPicker from './MapLocationPicker'
 import { ICreateHelpRequest } from '@nx-mono-repo-deployment-test/shared/src/interfaces/help-request/ICreateHelpRequest'
 import {
   HelpRequestCategory,
@@ -393,73 +393,18 @@ export default function EmergencyRequestForm({
 
               <div className="space-y-2">
                 <Label>{t('gpsLocation')} *</Label>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-1">
-                    <Label htmlFor="latitude" className="text-xs">
-                      {t('latitude')}
-                    </Label>
-                    <Input
-                      id="latitude"
-                      type="number"
-                      step="any"
-                      value={formData.gpsLocation.lat}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          gpsLocation: {
-                            ...formData.gpsLocation,
-                            lat: parseFloat(e.target.value) || 0,
-                          },
-                        })
-                      }
-                      placeholder="7.8731"
-                    />
+                {(!formData.gpsLocation.lat || !formData.gpsLocation.lng || 
+                  formData.gpsLocation.lat === 0 || formData.gpsLocation.lng === 0) && (
+                  <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-3 py-2 rounded-md text-sm mb-2">
+                    Location is required to proceed to the next step. Please click on the map to select your location.
                   </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="longitude" className="text-xs">
-                      {t('longitude')}
-                    </Label>
-                    <Input
-                      id="longitude"
-                      type="number"
-                      step="any"
-                      value={formData.gpsLocation.lng}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          gpsLocation: {
-                            ...formData.gpsLocation,
-                            lng: parseFloat(e.target.value) || 0,
-                          },
-                        })
-                      }
-                      placeholder="80.7718"
-                    />
-                  </div>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => {
-                    if (navigator.geolocation) {
-                      navigator.geolocation.getCurrentPosition(
-                        (position) => {
-                          handleLocationChange(position.coords.latitude, position.coords.longitude)
-                        },
-                        () => {
-                          alert(t('unableToGetLocation'))
-                        }
-                      )
-                    } else {
-                      alert(t('geolocationNotSupported'))
-                    }
-                  }}
-                >
-                  <MapPin className="mr-2 h-4 w-4" />
-                  {t('getCurrentLocation')}
-                </Button>
-                <p className="text-xs text-gray-500">{t('orEnterCoordinatesManually')}</p>
+                )}
+                <MapLocationPicker
+                  onLocationChange={handleLocationChange}
+                  initialLat={formData.gpsLocation.lat || 0}
+                  initialLng={formData.gpsLocation.lng || 0}
+                  height="350px"
+                />
               </div>
 
               <div className="space-y-2">
