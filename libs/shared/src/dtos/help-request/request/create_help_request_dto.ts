@@ -2,7 +2,7 @@ import { IsNumber, IsString, IsNotEmpty, IsOptional, IsEnum, Length, Min, Max, I
 import { BaseDto } from '../../common/base_dto';
 import { IBodyDto } from '../../../interfaces';
 import { ICreateHelpRequest } from '../../../interfaces/help-request/ICreateHelpRequest';
-import { HelpRequestCategory, Urgency, ContactType } from '../../../enums';
+import { Urgency, ContactType } from '../../../enums';
 
 /**
  * DTO for creating a new help request
@@ -19,10 +19,6 @@ export class CreateHelpRequestDto extends BaseDto implements IBodyDto, ICreateHe
   @Min(-180, { message: 'Longitude must be between -180 and 180' })
   @Max(180, { message: 'Longitude must be between -180 and 180' })
   lng!: number;
-
-  @IsEnum(HelpRequestCategory, { message: 'Category must be a valid category' })
-  @IsNotEmpty({ message: 'Category is required' })
-  category!: HelpRequestCategory;
 
   @IsEnum(Urgency, { message: 'Urgency must be Low, Medium, or High' })
   @IsNotEmpty({ message: 'Urgency is required' })
@@ -82,7 +78,6 @@ export class CreateHelpRequestDto extends BaseDto implements IBodyDto, ICreateHe
     if (data) {
       this.lat = data.lat || 0;
       this.lng = data.lng || 0;
-      this.category = data.category!;
       this.urgency = data.urgency!;
       this.shortNote = data.shortNote || '';
       this.approxArea = data.approxArea || '';

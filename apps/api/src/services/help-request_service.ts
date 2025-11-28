@@ -1,7 +1,7 @@
 import { HelpRequestDao } from '../dao';
 import { CreateHelpRequestDto, HelpRequestResponseDto } from '@nx-mono-repo-deployment-test/shared/src/dtos/help-request';
 import { IApiResponse } from '@nx-mono-repo-deployment-test/shared/src/interfaces';
-import { HelpRequestCategory, Urgency } from '@nx-mono-repo-deployment-test/shared/src/enums';
+import { Urgency } from '@nx-mono-repo-deployment-test/shared/src/enums';
 
 /**
  * Service layer for HelpRequest business logic
@@ -29,7 +29,6 @@ class HelpRequestService {
    * Get all help requests with optional filters
    */
   public async getAllHelpRequests(filters?: {
-    category?: HelpRequestCategory;
     urgency?: Urgency;
     district?: string;
   }): Promise<IApiResponse<HelpRequestResponseDto[]>> {
@@ -117,7 +116,6 @@ class HelpRequestService {
       const trimmedDto = new CreateHelpRequestDto({
         lat: createHelpRequestDto.lat,
         lng: createHelpRequestDto.lng,
-        category: createHelpRequestDto.category,
         urgency: createHelpRequestDto.urgency,
         shortNote: createHelpRequestDto.shortNote.trim(),
         approxArea: createHelpRequestDto.approxArea.trim(),
