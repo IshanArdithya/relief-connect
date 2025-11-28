@@ -1,4 +1,4 @@
-import { HelpRequestCategory, Urgency, ContactType, HelpRequestStatus } from '../../enums';
+import { Urgency, ContactType, HelpRequestStatus } from '../../enums';
 
 /**
  * Help Request interface
@@ -8,7 +8,6 @@ export interface IHelpRequest {
   userId?: number; // User who created this help request
   lat: number;
   lng: number;
-  category: HelpRequestCategory;
   urgency: Urgency;
   shortNote: string;
   approxArea: string;

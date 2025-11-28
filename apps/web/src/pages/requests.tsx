@@ -8,7 +8,7 @@ import { Button } from 'apps/web/src/components/ui/button'
 import { Input } from 'apps/web/src/components/ui/input'
 import { Label } from 'apps/web/src/components/ui/label'
 import { HelpRequestResponseDto } from '@nx-mono-repo-deployment-test/shared/src/dtos/help-request/response/help_request_response_dto'
-import { Urgency, HelpRequestCategory } from '@nx-mono-repo-deployment-test/shared/src/enums'
+import { Urgency } from '@nx-mono-repo-deployment-test/shared/src/enums'
 import {
   Search,
   MapPin,

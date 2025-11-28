@@ -18,7 +18,7 @@ import {
 } from 'apps/web/src/components/ui/drawer'
 import type { HelpRequestResponseDto } from '@nx-mono-repo-deployment-test/shared/src/dtos/help-request/response/help_request_response_dto'
 import type { CampResponseDto } from '@nx-mono-repo-deployment-test/shared/src/dtos/camp/response/camp_response_dto'
-import { Urgency, HelpRequestCategory } from '@nx-mono-repo-deployment-test/shared/src/enums'
+import { Urgency } from '@nx-mono-repo-deployment-test/shared/src/enums'
 import { Filter, ArrowLeft } from 'lucide-react'
 import {
   SRI_LANKA_PROVINCES,

@@ -15,7 +15,6 @@ import { Textarea } from 'apps/web/src/components/ui/textarea'
 import MapLocationPicker from './MapLocationPicker'
 import { ICreateHelpRequest } from '@nx-mono-repo-deployment-test/shared/src/interfaces/help-request/ICreateHelpRequest'
 import {
-  HelpRequestCategory,
   Urgency,
   ContactType,
 } from '@nx-mono-repo-deployment-test/shared/src/enums'
@@ -172,13 +171,6 @@ export default function EmergencyRequestForm({
       const helpRequestData: ICreateHelpRequest = {
         lat: formData.gpsLocation.lat,
         lng: formData.gpsLocation.lng,
-        category:
-          formData.rationItems.dry_rations ||
-          formData.rationItems.ready_meals ||
-          formData.rationItems.milk_powder ||
-          formData.rationItems.bottled_water
-            ? HelpRequestCategory.FOOD_WATER
-            : HelpRequestCategory.OTHER,
         urgency: formData.urgent ? Urgency.HIGH : Urgency.MEDIUM,
         shortNote:
           formData.notes ||

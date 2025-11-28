@@ -1,6 +1,6 @@
 import { Table, Column, Model, DataType, CreatedAt, UpdatedAt, PrimaryKey, AutoIncrement, ForeignKey, BelongsTo } from 'sequelize-typescript';
 import { IHelpRequest } from '@nx-mono-repo-deployment-test/shared/src/interfaces/help-request/IHelpRequest';
-import { HelpRequestStatus, HelpRequestCategory, Urgency, ContactType } from '@nx-mono-repo-deployment-test/shared/src/enums';
+import { HelpRequestStatus, Urgency, ContactType } from '@nx-mono-repo-deployment-test/shared/src/enums';
 import UserModel from './user.model';
 
 @Table({
@@ -14,7 +14,6 @@ export default class HelpRequestModel extends Model<IHelpRequest> implements IHe
   public static readonly HELP_REQUEST_USER_ID = 'userId';
   public static readonly HELP_REQUEST_LAT = 'lat';
   public static readonly HELP_REQUEST_LNG = 'lng';
-  public static readonly HELP_REQUEST_CATEGORY = 'category';
   public static readonly HELP_REQUEST_URGENCY = 'urgency';
   public static readonly HELP_REQUEST_SHORT_NOTE = 'shortNote';
   public static readonly HELP_REQUEST_APPROX_AREA = 'approxArea';
@@ -65,13 +64,6 @@ export default class HelpRequestModel extends Model<IHelpRequest> implements IHe
     field: HelpRequestModel.HELP_REQUEST_LNG,
   })
   lng!: number;
-
-  @Column({
-    type: DataType.STRING(50),
-    allowNull: false,
-    field: HelpRequestModel.HELP_REQUEST_CATEGORY,
-  })
-  category!: HelpRequestCategory;
 
   @Column({
     type: DataType.STRING(20),

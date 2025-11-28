@@ -38,7 +38,7 @@ import {
 } from 'lucide-react'
 import LanguageSwitcher from './LanguageSwitcher'
 import { HelpRequestResponseDto } from '@nx-mono-repo-deployment-test/shared/src/dtos/help-request/response/help_request_response_dto'
-import { Urgency, HelpRequestCategory } from '@nx-mono-repo-deployment-test/shared/src/enums'
+import { Urgency } from '@nx-mono-repo-deployment-test/shared/src/enums'
 import {
   SRI_LANKA_PROVINCES,
   SRI_LANKA_DISTRICTS,
@@ -850,8 +850,6 @@ export default function LandingPage() {
                                 <div className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-xs font-medium">
                                   {requestType}
                                 </div>
-                                <span>•</span>
-                                <span className="text-xs">{request.category || 'General'}</span>
                               </div>
                             </div>
                           </div>

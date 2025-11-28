@@ -1,5 +1,5 @@
 import { IHelpRequest } from '../../../interfaces/help-request/IHelpRequest';
-import { HelpRequestStatus, HelpRequestCategory, Urgency, ContactType } from '../../../enums';
+import { HelpRequestStatus, Urgency, ContactType } from '../../../enums';
 
 /**
  * DTO for help request response
@@ -9,7 +9,6 @@ export class HelpRequestResponseDto implements IHelpRequest {
   userId?: number;
   lat: number;
   lng: number;
-  category: HelpRequestCategory;
   urgency: Urgency;
   shortNote: string;
   approxArea: string;
@@ -30,7 +29,6 @@ export class HelpRequestResponseDto implements IHelpRequest {
     this.userId = helpRequest.userId;
     this.lat = helpRequest.lat;
     this.lng = helpRequest.lng;
-    this.category = helpRequest.category;
     this.urgency = helpRequest.urgency;
     this.shortNote = helpRequest.shortNote;
     this.approxArea = helpRequest.approxArea;

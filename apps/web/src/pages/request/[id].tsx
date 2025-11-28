@@ -168,7 +168,6 @@ export default function RequestDetailsPage() {
       query: {
         requestId: request.id,
         userName: requestName,
-        category: request.category,
         urgency: request.urgency,
         items: request.shortNote?.match(/Items:\s*(.+)/)?.[1] || '',
         location: request.approxArea || '',
@@ -311,11 +310,6 @@ export default function RequestDetailsPage() {
                 <p className="text-gray-700 ml-7">{items}</p>
               </div>
 
-              {/* Category */}
-              <div>
-                <span className="text-sm font-semibold text-gray-600">Category:</span>{' '}
-                <span className="text-gray-700">{request.category || 'General'}</span>
-              </div>
 
               {/* Contact Info */}
               <div className="flex items-center gap-2">

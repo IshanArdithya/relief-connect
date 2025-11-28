@@ -1,4 +1,4 @@
-import { HelpRequestCategory, Urgency, ContactType } from '../../enums';
+import { Urgency, ContactType } from '../../enums';
 
 /**
  * Frontend interface for creating a new help request
@@ -7,7 +7,6 @@ import { HelpRequestCategory, Urgency, ContactType } from '../../enums';
 export interface ICreateHelpRequest {
   lat: number;
   lng: number;
-  category: HelpRequestCategory;
   urgency: Urgency;
   shortNote: string;
   approxArea: string;
