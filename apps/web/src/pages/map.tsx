@@ -24,8 +24,8 @@ import {
   SRI_LANKA_PROVINCES,
   SRI_LANKA_DISTRICTS,
   DISTRICT_COORDINATES,
-  getMockCoordinates,
 } from '../data/sri-lanka-locations'
+import { helpRequestService, campService } from '../services'
 
 // Dynamically import Map to avoid SSR issues with Leaflet
 const Map = dynamic(() => import('../components/Map'), { ssr: false })
@@ -79,154 +79,40 @@ export default function MapDashboard() {
     }
   }, [router.query])
 
-  // Add mock coordinates to requests that don't have them
+  // Use requests as-is (coordinates should come from API)
   const requestsWithMockCoords = useMemo(() => {
-    return helpRequests.map((request) => {
-      if (!request.lat || !request.lng || request.lat === 0 || request.lng === 0) {
-        const [lat, lng] = getMockCoordinates(appliedFilters.district)
-        return { ...request, lat, lng }
-      }
-      return request
-    })
-  }, [helpRequests, appliedFilters.district])
-
-  // Generate mock data
-  const generateMockData = () => {
-    const mockRequests: HelpRequestResponseDto[] = [
-      {
-        id: 1,
-        lat: 6.9271,
-        lng: 79.8612,
-        category: HelpRequestCategory.FOOD_WATER,
-        urgency: Urgency.HIGH,
-        shortNote:
-          'Name: John Doe, People: 5, Kids: 2, Elders: 2. Items: Food & Water (3), Torch (2)',
-        approxArea: 'Colombo',
-        contactType: 'Phone' as any,
-        contact: '0771234567',
-      },
-      {
-        id: 2,
-        lat: 7.2906,
-        lng: 80.6337,
-        category: HelpRequestCategory.OTHER,
-        urgency: Urgency.MEDIUM,
-        shortNote: 'Name: Jane Smith, People: 3. Items: Canned Foods (5), Noodles (10)',
-        approxArea: 'Kandy',
-        contactType: 'Phone' as any,
-        contact: '0777654321',
-      },
-      {
-        id: 3,
-        lat: 6.0329,
-        lng: 80.217,
-        category: HelpRequestCategory.FOOD_WATER,
-        urgency: Urgency.HIGH,
-        shortNote:
-          'Name: Kamal Perera, People: 8, Kids: 3, Elders: 3. Items: Food & Water (5), Candle (4), Matches (2)',
-        approxArea: 'Galle',
-        contactType: 'Phone' as any,
-        contact: '0772345678',
-      },
-      {
-        id: 4,
-        lat: 7.4675,
-        lng: 80.6234,
-        category: HelpRequestCategory.OTHER,
-        urgency: Urgency.LOW,
-        shortNote: 'Name: Nimal Fernando, People: 2. Items: Tissues (3), Diary (1)',
-        approxArea: 'Matale',
-        contactType: 'WhatsApp' as any,
-        contact: '0773456789',
-      },
-      {
-        id: 5,
-        lat: 5.9549,
-        lng: 80.555,
-        category: HelpRequestCategory.FOOD_WATER,
-        urgency: Urgency.MEDIUM,
-        shortNote: 'Name: Sunil Silva, People: 4, Kids: 1. Items: Food & Water (2), Noodles (8)',
-        approxArea: 'Matara',
-        contactType: 'Phone' as any,
-        contact: '0774567890',
-      },
-      {
-        id: 6,
-        lat: 6.5854,
-        lng: 79.9607,
-        category: HelpRequestCategory.OTHER,
-        urgency: Urgency.HIGH,
-        shortNote:
-          'Name: Priya Wickramasinghe, People: 6, Kids: 2, Elders: 2. Items: Torch (3), Candle (5), Matches (3)',
-        approxArea: 'Kalutara',
-        contactType: 'Phone' as any,
-        contact: '0775678901',
-      },
-    ]
-
-    const mockCamps: CampResponseDto[] = [
-      {
-        id: 1,
-        lat: 7.0847,
-        lng: 80.0097,
-        campType: 'Official' as any,
-        name: 'Gampaha Relief Camp',
-        peopleRange: '10-50' as any,
-        needs: ['Food', 'Medical'] as any,
-        shortNote: 'Official relief camp with 35 people',
-        contactType: 'Phone' as any,
-        contact: '0776789012',
-      },
-      {
-        id: 2,
-        lat: 6.6828,
-        lng: 80.4012,
-        campType: 'Community' as any,
-        name: 'Ratnapura Community Camp',
-        peopleRange: '50+' as any,
-        needs: ['Food', 'Rescue', 'Clothes'] as any,
-        shortNote: 'Community organized camp',
-        contactType: 'WhatsApp' as any,
-        contact: '0777890123',
-      },
-    ]
-
-    return { mockRequests, mockCamps }
-  }
+    return helpRequests
+  }, [helpRequests])
 
   const fetchData = useCallback(async () => {
     setLoading(true)
     setError(null)
 
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
     try {
-      const { mockRequests, mockCamps } = generateMockData()
+      // Fetch help requests from API
+      const helpRequestsResponse = await helpRequestService.getAllHelpRequests({
+        district: appliedFilters.district,
+        urgency: appliedFilters.emergencyLevel,
+      })
 
-      // Filter mock data based on filters
-      let filteredMockRequests = mockRequests
-      let filteredMockCamps = mockCamps
+      // Fetch camps from API
+      const campsResponse = await campService.getAllCamps({
+        district: appliedFilters.district,
+      })
 
-      // Filter by district
-      if (appliedFilters.district) {
-        filteredMockRequests = mockRequests.filter((req) =>
-          req.approxArea?.toLowerCase().includes(appliedFilters.district!.toLowerCase())
-        )
-        filteredMockCamps = mockCamps.filter((camp) =>
-          camp.shortNote?.toLowerCase().includes(appliedFilters.district!.toLowerCase())
-        )
+      if (helpRequestsResponse.success && helpRequestsResponse.data) {
+        setHelpRequests(helpRequestsResponse.data)
+      } else {
+        console.error('[MapPage] Failed to load help requests:', helpRequestsResponse.error)
+        setHelpRequests([])
       }
 
-      // Filter by urgency
-      if (appliedFilters.emergencyLevel) {
-        filteredMockRequests = filteredMockRequests.filter(
-          (req) => req.urgency === appliedFilters.emergencyLevel
-        )
+      if (campsResponse.success && campsResponse.data) {
+        setCamps(campsResponse.data)
+      } else {
+        console.error('[MapPage] Failed to load camps:', campsResponse.error)
+        setCamps([])
       }
-
-      setHelpRequests(filteredMockRequests)
-      setCamps(filteredMockCamps)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load data')
     } finally {

@@ -24,13 +24,9 @@ export default function RequestDetailsPage() {
     }
   }, [requestData])
 
-  // Mock images for display (1 main + 4 thumbnails)
-  const mockImages = [
-    "/disaster-relief-aid.jpg",
-    "/food-supplies.jpg",
-    "/medical-aid.jpg",
-    "/shelter-help.jpg",
-    "/emergency-rescue.jpg",
+  // Placeholder images (can be replaced with actual images from API if available)
+  const placeholderImages = [
+    "/placeholder.svg",
   ]
 
   if (!request) {
@@ -228,7 +224,7 @@ export default function RequestDetailsPage() {
                 <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
                   <div className="aspect-square bg-gray-100 flex items-center justify-center">
                     <img
-                      src={mockImages[selectedImageIndex] || "/placeholder.svg"}
+                      src={placeholderImages[0] || "/placeholder.svg"}
                       alt={`Request ${selectedImageIndex + 1}`}
                       className="w-full h-full object-cover"
                     />
@@ -237,7 +233,7 @@ export default function RequestDetailsPage() {
 
                 {/* Thumbnail Images */}
                 <div className="grid grid-cols-4 gap-2">
-                  {mockImages.map((image, index) => (
+                  {placeholderImages.map((image, index) => (
                     <button
                       key={index}
                       onClick={() => setSelectedImageIndex(index)}

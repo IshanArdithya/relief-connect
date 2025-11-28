@@ -43,86 +43,11 @@ import {
   SRI_LANKA_PROVINCES,
   SRI_LANKA_DISTRICTS,
   DISTRICT_COORDINATES,
-  getMockCoordinates,
 } from '../data/sri-lanka-locations'
 import apiClient from '../services/api-client'
+import { helpRequestService } from '../services'
 
 type ViewMode = 'initial' | 'need-help' | 'can-help'
-
-// Generate mock data for analytics
-const generateMockData = (): HelpRequestResponseDto[] => {
-  return [
-    {
-      id: 1,
-      lat: 6.9271,
-      lng: 79.8612,
-      category: HelpRequestCategory.FOOD_WATER,
-      urgency: Urgency.HIGH,
-      shortNote:
-        'Name: John Doe, People: 5, Kids: 2, Elders: 2. Items: Food & Water (3), Torch (2)',
-      approxArea: 'Colombo',
-      contactType: 'Phone' as any,
-      contact: '0771234567',
-    },
-    {
-      id: 2,
-      lat: 7.2906,
-      lng: 80.6337,
-      category: HelpRequestCategory.OTHER,
-      urgency: Urgency.MEDIUM,
-      shortNote: 'Name: Jane Smith, People: 3. Items: Canned Foods (5), Noodles (10)',
-      approxArea: 'Kandy',
-      contactType: 'Phone' as any,
-      contact: '0777654321',
-    },
-    {
-      id: 3,
-      lat: 6.0329,
-      lng: 80.217,
-      category: HelpRequestCategory.FOOD_WATER,
-      urgency: Urgency.HIGH,
-      shortNote:
-        'Name: Kamal Perera, People: 8, Kids: 3, Elders: 3. Items: Food & Water (5), Candle (4), Matches (2)',
-      approxArea: 'Galle',
-      contactType: 'Phone' as any,
-      contact: '0772345678',
-    },
-    {
-      id: 4,
-      lat: 7.4675,
-      lng: 80.6234,
-      category: HelpRequestCategory.OTHER,
-      urgency: Urgency.LOW,
-      shortNote: 'Name: Nimal Fernando, People: 2. Items: Tissues (3), Diary (1)',
-      approxArea: 'Matale',
-      contactType: 'WhatsApp' as any,
-      contact: '0773456789',
-    },
-    {
-      id: 5,
-      lat: 5.9549,
-      lng: 80.555,
-      category: HelpRequestCategory.FOOD_WATER,
-      urgency: Urgency.MEDIUM,
-      shortNote: 'Name: Sunil Silva, People: 4, Kids: 1. Items: Food & Water (2), Noodles (8)',
-      approxArea: 'Matara',
-      contactType: 'Phone' as any,
-      contact: '0774567890',
-    },
-    {
-      id: 6,
-      lat: 6.5854,
-      lng: 79.9607,
-      category: HelpRequestCategory.OTHER,
-      urgency: Urgency.HIGH,
-      shortNote:
-        'Name: Priya Wickramasinghe, People: 6, Kids: 2, Elders: 2. Items: Torch (3), Candle (5), Matches (3)',
-      approxArea: 'Kalutara',
-      contactType: 'Phone' as any,
-      contact: '0775678901',
-    },
-  ]
-}
 
 export default function LandingPage() {
   const router = useRouter()
@@ -181,37 +106,29 @@ export default function LandingPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.query])
 
-  // Load requests from localStorage and combine with mock data
+  // Load requests from API
   useEffect(() => {
     const loadData = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 500))
-      const mockData = generateMockData()
-
-      // Load stored requests from localStorage
-      if (typeof window !== 'undefined') {
-        const storedRequests = JSON.parse(localStorage.getItem('help_requests') || '[]')
-        if (storedRequests.length > 0) {
-          setHelpRequests([...mockData, ...storedRequests])
+      try {
+        const response = await helpRequestService.getAllHelpRequests()
+        if (response.success && response.data) {
+          setHelpRequests(response.data)
         } else {
-          setHelpRequests(mockData)
+          console.error('[LandingPage] Failed to load help requests:', response.error)
+          setHelpRequests([])
         }
-      } else {
-        setHelpRequests(mockData)
+      } catch (error) {
+        console.error('[LandingPage] Error loading help requests:', error)
+        setHelpRequests([])
       }
     }
     loadData()
   }, [])
 
-  // Add mock coordinates to requests
+  // Use requests as-is (coordinates should come from API)
   const requestsWithMockCoords = useMemo(() => {
-    return helpRequests.map((request) => {
-      if (!request.lat || !request.lng || request.lat === 0 || request.lng === 0) {
-        const [lat, lng] = getMockCoordinates(appliedFilters.district)
-        return { ...request, lat, lng }
-      }
-      return request
-    })
-  }, [helpRequests, appliedFilters.district])
+    return helpRequests
+  }, [helpRequests])
 
   const handleIdentifierSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -356,16 +273,15 @@ export default function LandingPage() {
     router.push('/my-requests')
   }
 
-  // Calculate analytics from mock data
+  // Calculate analytics from actual data
   const analytics = useMemo(() => {
-    const mockRequests = generateMockData()
-    const totalRequests = mockRequests.length
-    const totalPeople = mockRequests.reduce((sum, req) => {
+    const totalRequests = helpRequests.length
+    const totalPeople = helpRequests.reduce((sum, req) => {
       const match = req.shortNote?.match(/People:\s*(\d+)/)
       return sum + (match ? parseInt(match[1]) : 1)
     }, 0)
 
-    const totalRations = mockRequests.reduce((sum, req) => {
+    const totalRations = helpRequests.reduce((sum, req) => {
       const itemsMatch = req.shortNote?.match(/Items:\s*(.+)/)
       if (itemsMatch) {
         const items = itemsMatch[1]
@@ -383,7 +299,7 @@ export default function LandingPage() {
       totalRations,
       donationsDone,
     }
-  }, [])
+  }, [helpRequests])
 
   const filteredRequests = useMemo(() => {
     let filtered = requestsWithMockCoords

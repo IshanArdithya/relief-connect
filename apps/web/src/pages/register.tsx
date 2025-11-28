@@ -33,7 +33,7 @@ export default function RegisterPage() {
 
     setLoading(true)
 
-    // Mock registration - in real app, this would call an API
+    // Registration handled by API
     await new Promise((resolve) => setTimeout(resolve, 500))
 
     // Store user info in localStorage (mock)

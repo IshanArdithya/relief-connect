@@ -57,13 +57,20 @@ class HelpRequestService {
     createHelpRequestDto: ICreateHelpRequest
   ): Promise<IApiResponse<HelpRequestResponseDto>> {
     try {
+      console.log('[HelpRequestService] Creating help request:', createHelpRequestDto);
+      console.log('[HelpRequestService] Endpoint:', this.basePath);
+      
+      // The API client will automatically add Authorization header if token exists
+      // skipAuth defaults to false, so authentication will be used
       const response = await apiClient.post<IApiResponse<HelpRequestResponseDto>>(
         this.basePath,
         createHelpRequestDto
       );
+      
+      console.log('[HelpRequestService] Help request created successfully:', response);
       return response;
     } catch (error) {
-      console.error('Error in HelpRequestService.createHelpRequest:', error);
+      console.error('[HelpRequestService] Error creating help request:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to create help request',

@@ -26,6 +26,7 @@ import {
 } from 'lucide-react'
 import { HelpRequestResponseDto } from '@nx-mono-repo-deployment-test/shared/src/dtos/help-request/response/help_request_response_dto'
 import { Urgency, HelpRequestCategory, ContactType } from '@nx-mono-repo-deployment-test/shared/src/enums'
+import { helpRequestService } from '../../services'
 
 interface DonationRequest {
   id: number
@@ -121,25 +122,29 @@ export default function RequestDetailsPage() {
 
   useEffect(() => {
     if (id) {
-      // Simulate loading request data
-      setTimeout(() => {
-        // Generate mock request data
-        const mockRequest: HelpRequestResponseDto = {
-          id: Number(id),
-          lat: 6.9271,
-          lng: 79.8612,
-          category: HelpRequestCategory.FOOD_WATER,
-          urgency: Urgency.HIGH,
-          shortNote:
-            'Name: John Doe, People: 5, Kids: 2, Elders: 2. Items: Food & Water (3), Torch (2), Medicine (1)',
-          approxArea: 'Colombo',
-          contact: '+94771234567',
-          contactType: ContactType.PHONE,
-          createdAt: new Date('2024-01-15T10:00:00Z'),
+      const loadRequest = async () => {
+        setLoading(true)
+        try {
+          // Fetch all requests and find the one with matching ID
+          const response = await helpRequestService.getAllHelpRequests()
+          if (response.success && response.data) {
+            const foundRequest = response.data.find((req) => req.id === Number(id))
+            if (foundRequest) {
+              setRequest(foundRequest)
+            } else {
+              setError('Request not found')
+            }
+          } else {
+            setError(response.error || 'Failed to load request')
+          }
+        } catch (err) {
+          console.error('[RequestPage] Error loading request:', err)
+          setError(err instanceof Error ? err.message : 'Failed to load request')
+        } finally {
+          setLoading(false)
         }
-        setRequest(mockRequest)
-        setLoading(false)
-      }, 500)
+      }
+      loadRequest()
     }
   }, [id])
 

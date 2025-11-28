@@ -11,22 +11,44 @@ export default function NeedHelp() {
   const router = useRouter()
 
   const handleSubmit = async (data: ICreateHelpRequest) => {
-    // Store in localStorage to add to requests section
-    if (typeof window !== 'undefined') {
-      const existingRequests: HelpRequestResponseDto[] = JSON.parse(
-        localStorage.getItem('help_requests') || '[]'
-      )
-      const newRequest: HelpRequestResponseDto = {
-        ...data,
-        id: Date.now(), // Generate a temporary ID
-        createdAt: new Date(),
-      }
-      existingRequests.push(newRequest)
-      localStorage.setItem('help_requests', JSON.stringify(existingRequests))
-    }
+    console.log('[NeedHelp] Submitting help request:', data)
     
-    const response = await helpRequestService.createHelpRequest(data)
-    return response
+    try {
+      // Call the API first
+      const response = await helpRequestService.createHelpRequest(data)
+      
+      console.log('[NeedHelp] API response:', response)
+      
+      if (response.success && response.data) {
+        console.log('[NeedHelp] Help request created successfully with ID:', response.data.id)
+        
+        // Store in localStorage to add to requests section (for backward compatibility)
+        if (typeof window !== 'undefined') {
+          const existingRequests: HelpRequestResponseDto[] = JSON.parse(
+            localStorage.getItem('help_requests') || '[]'
+          )
+          const newRequest: HelpRequestResponseDto = {
+            ...response.data,
+          }
+          existingRequests.push(newRequest)
+          localStorage.setItem('help_requests', JSON.stringify(existingRequests))
+        }
+        
+        return response
+      } else {
+        console.error('[NeedHelp] API request failed:', response.error)
+        return {
+          success: false,
+          error: response.error || 'Failed to create help request. Please try again.',
+        }
+      }
+    } catch (error) {
+      console.error('[NeedHelp] Error creating help request:', error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to create help request. Please check your connection and try again.',
+      }
+    }
   }
 
   return (
