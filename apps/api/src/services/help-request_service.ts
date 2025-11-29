@@ -64,6 +64,37 @@ class HelpRequestService {
   }
 
   /**
+   * Get all help requests created by the authenticated user
+   * @param userId - User ID of the authenticated user
+   */
+  public async getMyHelpRequests(userId: number): Promise<IApiResponse<HelpRequestWithOwnershipResponseDto[]>> {
+    try {
+      const helpRequests = await this.helpRequestDao.findByUserId(userId);
+      
+      // Fetch inventory for each help request and create DTOs
+      const helpRequestDtos = await Promise.all(
+        helpRequests.map(async (helpRequest) => {
+          const inventoryItems = await this.inventoryItemDao.findByHelpRequestId(helpRequest.id!);
+          const inventoryDtos = inventoryItems.map(item => new InventoryItemResponseDto(item));
+          return new HelpRequestWithOwnershipResponseDto(helpRequest, true, inventoryDtos);
+        })
+      );
+
+      return {
+        success: true,
+        data: helpRequestDtos,
+        count: helpRequestDtos.length,
+      };
+    } catch (error) {
+      console.error(`Error in HelpRequestService.getMyHelpRequests (${userId}):`, error);
+      return {
+        success: false,
+        error: 'Failed to retrieve help requests',
+      };
+    }
+  }
+
+  /**
    * Get help request by ID
    * @param id - The help request ID
    * @param requesterUserId - Optional user ID of the requester (to determine ownership)
@@ -85,9 +116,13 @@ class HelpRequestService {
       // Determine if requester is the owner
       const isOwner = requesterUserId !== undefined && helpRequest.userId === requesterUserId;
 
+      // Fetch inventory items for this help request
+      const inventoryItems = await this.inventoryItemDao.findByHelpRequestId(id);
+      const inventoryDtos = inventoryItems.map(item => new InventoryItemResponseDto(item));
+
       return {
         success: true,
-        data: new HelpRequestWithOwnershipResponseDto(helpRequest, isOwner),
+        data: new HelpRequestWithOwnershipResponseDto(helpRequest, isOwner, inventoryDtos),
       };
     } catch (error) {
       console.error(`Error in HelpRequestService.getHelpRequestById (${id}):`, error);
@@ -150,41 +185,47 @@ class HelpRequestService {
         rationItems: createHelpRequestDto.rationItems,
       });
 
-      // Validate ration items exist in database
-      if (trimmedDto.rationItems && trimmedDto.rationItems.length > 0) {
+      // Validate and process ration items with quantities
+      const rationItemsMap = trimmedDto.rationItems || {};
+      
+      if (Object.keys(rationItemsMap).length > 0) {
         const invalidItems: string[] = [];
-        for (const itemCode of trimmedDto.rationItems) {
+        for (const [itemCode, quantity] of Object.entries(rationItemsMap)) {
+          // Validate quantity is positive
+          if (typeof quantity !== 'number' || quantity <= 0) {
+            invalidItems.push(`${itemCode} (invalid quantity: must be positive number)`);
+            continue;
+          }
           // Validate it's a valid enum value
           if (!Object.values(RationItemType).includes(itemCode as RationItemType)) {
-            invalidItems.push(itemCode);
+            invalidItems.push(`${itemCode} (invalid item code)`);
             continue;
           }
           // Validate it exists in database
           const item = await this.itemDao.findByCode(itemCode);
           if (!item) {
-            invalidItems.push(itemCode);
+            invalidItems.push(`${itemCode} (item not found in database)`);
           }
         }
         if (invalidItems.length > 0) {
           return {
             success: false,
-            error: `Invalid ration items: ${invalidItems.join(', ')}. Please ensure all items are seeded.`,
+            error: `Invalid ration items: ${invalidItems.join(', ')}. Please ensure all items are seeded and quantities are positive numbers.`,
           };
         }
       }
 
-      const helpRequest = await this.helpRequestDao.create(trimmedDto, userId);
+      // Store ration items as array for database (extract keys for display purposes)
+      const rationItemsArray = Object.keys(rationItemsMap);
+      // Create DTO with array format for database storage (DAO will handle normalization)
+      const dtoForDao = new CreateHelpRequestDto(trimmedDto);
+      // Override rationItems to array format for database storage
+      (dtoForDao as any).rationItems = rationItemsArray;
+      const helpRequest = await this.helpRequestDao.create(dtoForDao, userId);
 
-      // Create inventory items for ration items
-      // Use provided quantities if available, otherwise default to 1
-      if (trimmedDto.rationItems && trimmedDto.rationItems.length > 0) {
-        const inventoryItemsMap: Record<string, number> = {};
-        trimmedDto.rationItems.forEach(itemCode => {
-          // Use provided quantity if available, otherwise default to 1
-          const quantity = trimmedDto.rationItemQuantities?.[itemCode] || 1;
-          inventoryItemsMap[itemCode] = quantity;
-        });
-        await this.inventoryItemDao.createInventoryItems(helpRequest.id!, inventoryItemsMap);
+      // Create inventory items with quantities
+      if (Object.keys(rationItemsMap).length > 0) {
+        await this.inventoryItemDao.createInventoryItems(helpRequest.id!, rationItemsMap);
       }
 
       return {
