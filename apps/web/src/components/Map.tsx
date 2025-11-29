@@ -2,12 +2,14 @@
 
 import type React from "react"
 import { useEffect } from "react"
+import { useRouter } from "next/router"
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
 import type { HelpRequestResponseDto } from "@nx-mono-repo-deployment-test/shared/src/dtos/help-request/response/help_request_response_dto"
 import type { CampResponseDto } from "@nx-mono-repo-deployment-test/shared/src/dtos/camp/response/camp_response_dto"
 import { Urgency, ContactType } from "@nx-mono-repo-deployment-test/shared/src/enums"
+import { RATION_ITEMS } from "./EmergencyRequestForm"
 import styles from "../styles/Map.module.css"
 
 // Fix for default marker icons in Next.js
@@ -53,6 +55,122 @@ const MapUpdater: React.FC<{ center: [number, number]; zoom: number }> = ({ cent
   return null
 }
 
+// Popup Content Component
+const PopupContent: React.FC<{
+  request: HelpRequestResponseDto
+  onRequestClick?: (request: HelpRequestResponseDto) => void
+}> = ({ request, onRequestClick }) => {
+  const router = useRouter()
+
+  // Format location - hide coordinates if they're just numbers
+  const formatLocation = (location: string | null | undefined) => {
+    if (!location) return 'Unknown location'
+    // Check if it's just coordinates (e.g., "8.032034155598001, 80.59982299804689")
+    const coordPattern = /^-?\d+\.\d+,\s*-?\d+\.\d+$/
+    if (coordPattern.test(location.trim())) {
+      return 'View on map'
+    }
+    return location
+  }
+
+  // Format ration items - rationItems is string[] (array of item IDs)
+  const formatRationItems = () => {
+    if (!request.rationItems || request.rationItems.length === 0) {
+      return null
+    }
+
+    return request.rationItems
+      .map((itemId) => {
+        const item = RATION_ITEMS.find((r) => r.id === itemId)
+        return item ? `${item.icon} ${item.label}` : itemId
+      })
+      .join(', ')
+  }
+
+  const handleViewDetails = () => {
+    router.push(`/request/${request.id}`)
+  }
+
+  const urgencyColor =
+    request.urgency === Urgency.HIGH
+      ? 'bg-red-100 text-red-700'
+      : request.urgency === Urgency.MEDIUM
+        ? 'bg-orange-100 text-orange-700'
+        : 'bg-green-100 text-green-700'
+
+  const rationItemsText = formatRationItems()
+  const locationText = formatLocation(request.approxArea)
+
+  return (
+    <div className="min-w-[280px] max-w-[320px]">
+      <div className="mb-3">
+        <h4 className="text-lg font-bold text-gray-900 mb-2">Help Request</h4>
+        <div className="flex items-center gap-2 mb-2">
+          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${urgencyColor}`}>
+            {request.urgency || 'Medium'}
+          </span>
+        </div>
+      </div>
+
+      <div className="space-y-2 mb-3 text-sm">
+        <div>
+          <span className="font-semibold text-gray-700">Location:</span>{' '}
+          <span className="text-gray-600">{locationText}</span>
+        </div>
+
+        {rationItemsText && (
+          <div>
+            <span className="font-semibold text-gray-700">Items:</span>{' '}
+            <span className="text-gray-600">{rationItemsText}</span>
+          </div>
+        )}
+
+        {request.shortNote && !rationItemsText && (
+          <div>
+            <span className="font-semibold text-gray-700">Note:</span>{' '}
+            <span className="text-gray-600">{request.shortNote}</span>
+          </div>
+        )}
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <button
+          onClick={handleViewDetails}
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 text-sm"
+        >
+          View Details
+        </button>
+
+        {request.contact && request.contactType !== ContactType.NONE && (
+          <div className="flex gap-2">
+            {request.contactType === ContactType.PHONE && (
+              <a
+                href={`tel:${request.contact}`}
+                className="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 text-sm text-center flex items-center justify-center gap-1"
+                style={{ color: 'white' }}
+              >
+                <span style={{ color: 'white' }}>📞</span>
+                <span style={{ color: 'white' }}>Call</span>
+              </a>
+            )}
+            {request.contactType === ContactType.WHATSAPP && (
+              <a
+                href={`https://wa.me/${request.contact.replace(/[^0-9]/g, '')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 text-sm text-center flex items-center justify-center gap-1"
+              >
+                <span>💬</span>
+                <span>WhatsApp</span>
+              </a>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 const Map: React.FC<MapProps> = ({
   helpRequests,
   camps,
@@ -60,6 +178,26 @@ const Map: React.FC<MapProps> = ({
   zoom = 7,
   onRequestClick,
 }) => {
+  // Filter and validate coordinates
+  const validHelpRequests = helpRequests.filter((request) => {
+    const lat = Number(request.lat)
+    const lng = Number(request.lng)
+    return !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0
+  })
+
+  const validCamps = camps.filter((camp) => {
+    const lat = Number(camp.lat)
+    const lng = Number(camp.lng)
+    return !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0
+  })
+
+  console.log('[Map Component] Rendering markers:', {
+    helpRequests: validHelpRequests.length,
+    camps: validCamps.length,
+    totalHelpRequests: helpRequests.length,
+    totalCamps: camps.length,
+  })
+
   return (
     <div className={styles.mapContainer}>
       <MapContainer center={center} zoom={zoom} style={{ height: "100%", width: "100%" }} scrollWheelZoom={true}>
@@ -70,75 +208,28 @@ const Map: React.FC<MapProps> = ({
         />
 
         {/* Help Request Markers */}
-        {helpRequests.map((request) => (
-          <Marker
-            key={`help-${request.id}`}
-            position={[request.lat, request.lng]}
-            icon={getUrgencyIcon(request.urgency)}
-          >
+        {validHelpRequests.map((request) => {
+          const lat = Number(request.lat)
+          const lng = Number(request.lng)
+          return (
+            <Marker
+              key={`help-${request.id}`}
+              position={[lat, lng]}
+              icon={getUrgencyIcon(request.urgency)}
+            >
             <Popup>
-              <div className={styles.popup}>
-                <h4>Help Request</h4>
-                <p>
-                  <strong>Urgency:</strong> {request.urgency}
-                </p>
-                <p>
-                  <strong>Area:</strong> {request.approxArea}
-                </p>
-                <p>
-                  <strong>Note:</strong> {request.shortNote}
-                </p>
-                <div className={styles.contactButtons}>
-                  <button
-                    onClick={() => {
-                      if (onRequestClick) {
-                        onRequestClick(request)
-                      }
-                    }}
-                    className={styles.contactButton}
-                    style={{
-                      backgroundColor: "#3b82f6",
-                      color: "white",
-                      border: "none",
-                      cursor: "pointer",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      fontSize: "14px",
-                      fontWeight: "bold",
-                      marginBottom: "8px",
-                      width: "100%",
-                    }}
-                  >
-                    View Details
-                  </button>
-                  {request.contact && request.contactType !== ContactType.NONE && (
-                    <>
-                      {request.contactType === ContactType.PHONE && (
-                        <a href={`tel:${request.contact}`} className={styles.contactButton}>
-                          📞 Call
-                        </a>
-                      )}
-                      {request.contactType === ContactType.WHATSAPP && (
-                        <a
-                          href={`https://wa.me/${request.contact.replace(/[^0-9]/g, "")}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={styles.contactButton}
-                        >
-                          💬 WhatsApp
-                        </a>
-                      )}
-                    </>
-                  )}
-                </div>
-              </div>
+              <PopupContent request={request} onRequestClick={onRequestClick} />
             </Popup>
           </Marker>
-        ))}
+            )
+          })}
 
         {/* Camp Markers */}
-        {camps.map((camp) => (
-          <Marker key={`camp-${camp.id}`} position={[camp.lat, camp.lng]} icon={campIcon}>
+        {validCamps.map((camp) => {
+          const lat = Number(camp.lat)
+          const lng = Number(camp.lng)
+          return (
+            <Marker key={`camp-${camp.id}`} position={[lat, lng]} icon={campIcon}>
             <Popup>
               <div className={styles.popup}>
                 <h4>Camp: {camp.name}</h4>
@@ -176,7 +267,8 @@ const Map: React.FC<MapProps> = ({
               </div>
             </Popup>
           </Marker>
-        ))}
+            )
+          })}
       </MapContainer>
     </div>
   )
