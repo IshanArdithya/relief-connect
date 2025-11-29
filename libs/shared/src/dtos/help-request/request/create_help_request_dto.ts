@@ -73,6 +73,9 @@ export class CreateHelpRequestDto extends BaseDto implements IBodyDto, ICreateHe
   @IsString({ each: true, message: 'Each ration item must be a string' })
   rationItems?: string[];
 
+  @IsOptional()
+  rationItemQuantities?: Record<string, number>; // Map of item IDs to quantities
+
   constructor(data?: Partial<ICreateHelpRequest>) {
     super();
     if (data) {
@@ -89,6 +92,7 @@ export class CreateHelpRequestDto extends BaseDto implements IBodyDto, ICreateHe
       this.children = data.children;
       this.pets = data.pets;
       this.rationItems = data.rationItems;
+      this.rationItemQuantities = data.rationItemQuantities;
     }
   }
 }

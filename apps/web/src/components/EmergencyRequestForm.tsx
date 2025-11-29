@@ -37,7 +37,7 @@ interface FormData {
   pets: number
   gpsLocation: { lat: number; lng: number }
   notes: string
-  rationItems: Record<string, boolean>
+  rationItems: Record<string, number> // Changed from boolean to number (0 = not selected, >0 = quantity)
   specialNeeds: string
   urgent: boolean
 }
@@ -92,11 +92,22 @@ export default function EmergencyRequestForm({
   }
 
   const toggleRationItem = (itemId: string) => {
+    const currentQuantity = formData.rationItems[itemId] || 0
     setFormData({
       ...formData,
       rationItems: {
         ...formData.rationItems,
-        [itemId]: !formData.rationItems[itemId],
+        [itemId]: currentQuantity > 0 ? 0 : 1, // Toggle: if selected (quantity > 0), deselect (0), else select with quantity 1
+      },
+    })
+  }
+
+  const updateRationItemQuantity = (itemId: string, quantity: number) => {
+    setFormData({
+      ...formData,
+      rationItems: {
+        ...formData.rationItems,
+        [itemId]: Math.max(0, quantity), // Ensure quantity is not negative
       },
     })
   }
@@ -118,8 +129,8 @@ export default function EmergencyRequestForm({
       }
     }
     if (currentStep === 2) {
-      // Check if at least one ration item is selected
-      const hasItems = Object.values(formData.rationItems).some((selected) => selected === true)
+      // Check if at least one ration item is selected (quantity > 0)
+      const hasItems = Object.values(formData.rationItems).some((quantity) => quantity > 0)
       if (!hasItems) {
         setError('Please select at least one item')
         return
@@ -150,16 +161,25 @@ export default function EmergencyRequestForm({
       const totalPeople =
         formData.elders + formData.children + (formData.requestType === 'family' ? 1 : 0)
       
-      // Convert ration items object to array of selected item IDs
+      // Convert ration items object to array of selected item IDs and quantities map
       const selectedRationItemIds = Object.entries(formData.rationItems)
-        .filter(([_, selected]) => selected === true)
+        .filter(([_, quantity]) => quantity > 0)
         .map(([id]) => id)
+
+      // Create quantities map (only include items with quantity > 0)
+      const rationItemQuantities: Record<string, number> = {}
+      Object.entries(formData.rationItems).forEach(([id, quantity]) => {
+        if (quantity > 0) {
+          rationItemQuantities[id] = quantity
+        }
+      })
 
       // Create human-readable list for shortNote (for backward compatibility)
       const rationItemsList = selectedRationItemIds
         .map((id) => {
           const item = RATION_ITEMS.find((i) => i.id === id)
-          return item ? item.label : ''
+          const quantity = formData.rationItems[id] || 1
+          return item ? `${item.label} (${quantity})` : ''
         })
         .filter(Boolean)
         .join(', ')
@@ -168,7 +188,7 @@ export default function EmergencyRequestForm({
         ? ` Special Needs: ${formData.specialNeeds}`
         : ''
 
-      const helpRequestData: ICreateHelpRequest = {
+      const helpRequestData: ICreateHelpRequest & { rationItemQuantities?: Record<string, number> } = {
         lat: formData.gpsLocation.lat,
         lng: formData.gpsLocation.lng,
         urgency: formData.urgent ? Urgency.HIGH : Urgency.MEDIUM,
@@ -187,6 +207,8 @@ export default function EmergencyRequestForm({
         pets: formData.pets > 0 ? formData.pets : undefined,
         // Ration items as structured array
         rationItems: selectedRationItemIds.length > 0 ? selectedRationItemIds : undefined,
+        // Ration item quantities map
+        rationItemQuantities: Object.keys(rationItemQuantities).length > 0 ? rationItemQuantities : undefined,
       }
 
       const response = await onSubmit(helpRequestData)
@@ -456,16 +478,16 @@ export default function EmergencyRequestForm({
             <CardContent className="space-y-3">
               <div className="grid grid-cols-1 gap-3 max-h-[400px] overflow-y-auto">
                 {RATION_ITEMS.map((item) => {
-                  const isSelected = formData.rationItems[item.id] || false
+                  const quantity = formData.rationItems[item.id] || 0
+                  const isSelected = quantity > 0
                   return (
                     <div
                       key={item.id}
-                      className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                      className={`flex items-center gap-3 p-3 rounded-lg border-2 transition-all ${
                         isSelected
                           ? 'bg-blue-50 border-blue-500'
                           : 'bg-gray-50 border-gray-200 hover:border-gray-300'
                       }`}
-                      onClick={() => toggleRationItem(item.id)}
                     >
                       <input
                         type="checkbox"
@@ -478,6 +500,40 @@ export default function EmergencyRequestForm({
                       <Label className="text-base font-medium cursor-pointer flex-1">
                         {item.label}
                       </Label>
+                      {isSelected && (
+                        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => updateRationItemQuantity(item.id, quantity - 1)}
+                            disabled={quantity <= 1}
+                          >
+                            <Minus className="h-3 w-3" />
+                          </Button>
+                          <input
+                            type="number"
+                            min="1"
+                            value={quantity}
+                            onChange={(e) => {
+                              const newQuantity = parseInt(e.target.value, 10) || 1
+                              updateRationItemQuantity(item.id, newQuantity)
+                            }}
+                            className="w-16 text-center border border-gray-300 rounded px-2 py-1"
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => updateRationItemQuantity(item.id, quantity + 1)}
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   )
                 })}
@@ -533,10 +589,10 @@ export default function EmergencyRequestForm({
     const totalPeople =
       formData.elders + formData.children + (formData.requestType === 'family' ? 1 : 0)
     const selectedItems = Object.entries(formData.rationItems)
-      .filter(([_, selected]) => selected === true)
-      .map(([id]) => {
+      .filter(([_, quantity]) => quantity > 0)
+      .map(([id, quantity]) => {
         const item = RATION_ITEMS.find((i) => i.id === id)
-        return item ? item.label : ''
+        return item ? `${item.label} (${quantity})` : ''
       })
       .filter(Boolean)
 

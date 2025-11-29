@@ -176,12 +176,13 @@ class HelpRequestService {
       const helpRequest = await this.helpRequestDao.create(trimmedDto, userId);
 
       // Create inventory items for ration items
-      // If rationItems is provided as an array of strings, create inventory items with quantityNeeded = 1 for each
-      // TODO: Enhance to support quantities in the future
+      // Use provided quantities if available, otherwise default to 1
       if (trimmedDto.rationItems && trimmedDto.rationItems.length > 0) {
         const inventoryItemsMap: Record<string, number> = {};
         trimmedDto.rationItems.forEach(itemCode => {
-          inventoryItemsMap[itemCode] = 1; // Default quantity of 1 per item
+          // Use provided quantity if available, otherwise default to 1
+          const quantity = trimmedDto.rationItemQuantities?.[itemCode] || 1;
+          inventoryItemsMap[itemCode] = quantity;
         });
         await this.inventoryItemDao.createInventoryItems(helpRequest.id!, inventoryItemsMap);
       }

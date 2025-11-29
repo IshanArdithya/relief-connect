@@ -20,5 +20,6 @@ export interface ICreateHelpRequest {
   pets?: number; // Number of pets
   // Ration items
   rationItems?: string[]; // Array of selected ration item IDs (e.g., ['dry_rations', 'bottled_water'])
+  rationItemQuantities?: Record<string, number>; // Map of item IDs to quantities (e.g., { 'dry_rations': 5, 'bottled_water': 10 })
 }
 
