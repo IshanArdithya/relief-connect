@@ -49,16 +49,19 @@ RUN addgroup -g 1001 -S nodejs && \
 COPY --from=builder /app/apps/api/dist ./dist
 COPY --from=builder /app/apps/api/package.json ./package.json
 COPY --from=builder /app/node_modules ./node_modules
-# Copy shared library source files (package.json points to src/index.ts)
+# Copy shared library source files (for reference, but we'll use compiled version)
 COPY --from=builder /app/libs/shared/package.json ./libs/shared/package.json
 COPY --from=builder /app/libs/shared/src ./libs/shared/src
 # Copy shared library to node_modules so Node.js can resolve @nx-mono-repo-deployment-test/shared
-# This is required for runtime module resolution
-# Remove any existing symlink/directory first, then copy directly from builder stage
+# The compiled code imports from /src/ paths, so we need to maintain that structure
+# Copy compiled JavaScript files from dist/libs/shared to maintain src/ structure
 RUN rm -rf node_modules/@nx-mono-repo-deployment-test/shared && \
     mkdir -p node_modules/@nx-mono-repo-deployment-test/shared
 COPY --from=builder /app/libs/shared/package.json node_modules/@nx-mono-repo-deployment-test/shared/package.json
-COPY --from=builder /app/libs/shared/src node_modules/@nx-mono-repo-deployment-test/shared/src
+# Copy compiled JavaScript files but maintain src/ directory structure for imports
+# The imports use @nx-mono-repo-deployment-test/shared/src/enums, so we need src/ with .js files
+# Shared library builds to dist/libs/shared/src (preserving src/ structure)
+COPY --from=builder /app/dist/libs/shared/src node_modules/@nx-mono-repo-deployment-test/shared/src
 # Copy apps/api directory structure for .env file resolution
 # The .env.dev file will be mounted by docker-compose, but we need the directory structure
 COPY --from=builder /app/apps/api ./apps/api
