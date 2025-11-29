@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
     externalDir: true,
   },
   i18n: nextI18nextConfig.i18n,
+  typescript: {
+    // Skip type checking for shared library files (they may have backend-only dependencies)
+    ignoreBuildErrors: false,
+  },
   webpack: (config, { isServer }) => {
     // Resolve shared library paths for webpack
     // The alias handles the base path, wildcard paths are resolved relative to this
