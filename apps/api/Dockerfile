@@ -54,10 +54,11 @@ COPY --from=builder /app/libs/shared/package.json ./libs/shared/package.json
 COPY --from=builder /app/libs/shared/src ./libs/shared/src
 # Copy shared library to node_modules so Node.js can resolve @nx-mono-repo-deployment-test/shared
 # This is required for runtime module resolution
-# Copy contents explicitly to avoid recursion issues (v2 - fixed recursion)
-RUN mkdir -p node_modules/@nx-mono-repo-deployment-test/shared && \
-    cp libs/shared/package.json node_modules/@nx-mono-repo-deployment-test/shared/ && \
-    cp -r libs/shared/src node_modules/@nx-mono-repo-deployment-test/shared/src
+# Remove any existing symlink/directory first, then copy directly from builder stage
+RUN rm -rf node_modules/@nx-mono-repo-deployment-test/shared && \
+    mkdir -p node_modules/@nx-mono-repo-deployment-test/shared
+COPY --from=builder /app/libs/shared/package.json node_modules/@nx-mono-repo-deployment-test/shared/package.json
+COPY --from=builder /app/libs/shared/src node_modules/@nx-mono-repo-deployment-test/shared/src
 # Copy apps/api directory structure for .env file resolution
 # The .env.dev file will be mounted by docker-compose, but we need the directory structure
 COPY --from=builder /app/apps/api ./apps/api
