@@ -115,6 +115,19 @@ export default function DonationInteractionModal({
   const handleMarkAsCompletedByDonator = async (donationId: number) => {
     if (!helpRequest.id) return;
     try {
+      // Find the donation to check if it's already scheduled
+      const donation = donations.find((d) => d.id === donationId);
+      
+      // If not scheduled yet, mark as scheduled first
+      if (donation && !donation.donatorMarkedScheduled) {
+        const scheduleResponse = await donationService.markAsScheduled(helpRequest.id, donationId);
+        if (!scheduleResponse.success) {
+          setError(scheduleResponse.error || 'Failed to mark donation as scheduled');
+          return;
+        }
+      }
+      
+      // Then mark as completed
       const response = await donationService.markAsCompletedByDonator(helpRequest.id, donationId);
       if (response.success) {
         await loadDonations();
@@ -188,44 +201,106 @@ export default function DonationInteractionModal({
                       <X className="h-4 w-4" />
                     </Button>
                   </div>
-                  <div className="grid grid-cols-1 gap-3 max-h-[300px] overflow-y-auto">
-                    {RATION_ITEMS.map((item) => {
-                      const count = rationItems[item.id] || 0;
-                      return (
-                        <div
-                          key={item.id}
-                          className="flex items-center gap-3 p-3 rounded-lg border-2 bg-gray-50"
-                        >
-                          <span className="text-2xl">{item.icon}</span>
-                          <Label className="flex-1 text-base font-medium">{item.label}</Label>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleRationItemChange(item.id, Math.max(0, count - 1))}
-                            >
-                              -
-                            </Button>
-                            <Input
-                              type="number"
-                              min="0"
-                              value={count}
-                              onChange={(e) =>
-                                handleRationItemChange(item.id, parseInt(e.target.value) || 0)
-                              }
-                              className="w-20 text-center"
-                            />
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleRationItemChange(item.id, count + 1)}
-                            >
-                              +
-                            </Button>
-                          </div>
+                  <div className="space-y-4">
+                    {/* Requested Items Section */}
+                    {helpRequest.rationItems && helpRequest.rationItems.length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                          Requested Items (from requester)
+                        </h4>
+                        <div className="grid grid-cols-1 gap-3 max-h-[200px] overflow-y-auto">
+                          {helpRequest.rationItems.map((itemId) => {
+                            const item = RATION_ITEMS.find((r) => r.id === itemId);
+                            if (!item) return null;
+                            const count = rationItems[item.id] || 0;
+                            return (
+                              <div
+                                key={item.id}
+                                className="flex items-center gap-3 p-3 rounded-lg border-2 bg-blue-50 border-blue-200"
+                              >
+                                <span className="text-2xl">{item.icon}</span>
+                                <Label className="flex-1 text-base font-medium">{item.label}</Label>
+                                <div className="flex items-center gap-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleRationItemChange(item.id, Math.max(0, count - 1))}
+                                  >
+                                    -
+                                  </Button>
+                                  <Input
+                                    type="number"
+                                    min="0"
+                                    value={count}
+                                    onChange={(e) =>
+                                      handleRationItemChange(item.id, parseInt(e.target.value) || 0)
+                                    }
+                                    className="w-20 text-center"
+                                  />
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleRationItemChange(item.id, count + 1)}
+                                  >
+                                    +
+                                  </Button>
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
-                      );
-                    })}
+                      </div>
+                    )}
+                    
+                    {/* Additional Items Section */}
+                    <div>
+                      <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                        Additional Items (optional)
+                      </h4>
+                      <div className="grid grid-cols-1 gap-3 max-h-[200px] overflow-y-auto">
+                        {RATION_ITEMS.map((item) => {
+                          // Skip items that are already in requested items
+                          if (helpRequest.rationItems && helpRequest.rationItems.includes(item.id)) {
+                            return null;
+                          }
+                          const count = rationItems[item.id] || 0;
+                          return (
+                            <div
+                              key={item.id}
+                              className="flex items-center gap-3 p-3 rounded-lg border-2 bg-gray-50"
+                            >
+                              <span className="text-2xl">{item.icon}</span>
+                              <Label className="flex-1 text-base font-medium">{item.label}</Label>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleRationItemChange(item.id, Math.max(0, count - 1))}
+                                >
+                                  -
+                                </Button>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  value={count}
+                                  onChange={(e) =>
+                                    handleRationItemChange(item.id, parseInt(e.target.value) || 0)
+                                  }
+                                  className="w-20 text-center"
+                                />
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleRationItemChange(item.id, count + 1)}
+                                >
+                                  +
+                                </Button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
                   <Button
                     onClick={handleCreateDonation}

@@ -259,12 +259,31 @@ export default function RequestDetailsPage() {
     if (!id) return
     
     try {
+      // Find the donation to check if it's already scheduled
+      const donation = donationRequests.find((d) => d.id === donationId)
+      
+      // If not scheduled yet, mark as scheduled first
+      if (donation && !donation.donatorMarkedScheduled) {
+        const scheduleResponse = await donationService.markAsScheduled(Number(id), donationId)
+        if (!scheduleResponse.success) {
+          console.error('Failed to mark donation as scheduled:', scheduleResponse.error)
+          alert(scheduleResponse.error || 'Failed to mark donation as scheduled')
+          return
+        }
+      }
+      
+      // Then mark as completed
       const response = await donationService.markAsCompletedByDonator(Number(id), donationId)
       if (response.success) {
-        // Update local state
+        // Update local state - mark both as scheduled and completed
         const updated = donationRequests.map((donation) =>
           donation.id === donationId 
-            ? { ...donation, status: 'confirmed' as const, donatorMarkedCompleted: true }
+            ? { 
+                ...donation, 
+                status: 'confirmed' as const, 
+                donatorMarkedScheduled: true,
+                donatorMarkedCompleted: true 
+              }
             : donation
         )
         setDonationRequests(updated)
@@ -634,7 +653,11 @@ export default function RequestDetailsPage() {
                                         size="sm"
                                         variant="outline"
                                         className="flex-1"
-                                        onClick={() => handleMarkAsScheduled(donation.id)}
+                                        onClick={(e) => {
+                                          e.preventDefault()
+                                          e.stopPropagation()
+                                          handleMarkAsScheduled(donation.id)
+                                        }}
                                       >
                                         <Calendar className="h-4 w-4 mr-2" />
                                         Mark as Scheduled
@@ -642,7 +665,11 @@ export default function RequestDetailsPage() {
                                       <Button
                                         size="sm"
                                         className="flex-1 bg-green-600 hover:bg-green-700"
-                                        onClick={() => handleMarkAsCompletedByDonator(donation.id)}
+                                        onClick={(e) => {
+                                          e.preventDefault()
+                                          e.stopPropagation()
+                                          handleMarkAsCompletedByDonator(donation.id)
+                                        }}
                                       >
                                         <CheckCircle className="h-4 w-4 mr-2" />
                                         Mark as Completed (Donator)
@@ -653,7 +680,11 @@ export default function RequestDetailsPage() {
                                     <Button
                                       size="sm"
                                       className="flex-1 bg-green-600 hover:bg-green-700"
-                                      onClick={() => handleMarkAsCompletedByDonator(donation.id)}
+                                      onClick={(e) => {
+                                        e.preventDefault()
+                                        e.stopPropagation()
+                                        handleMarkAsCompletedByDonator(donation.id)
+                                      }}
                                     >
                                       <CheckCircle className="h-4 w-4 mr-2" />
                                       Mark as Completed (Donator)
