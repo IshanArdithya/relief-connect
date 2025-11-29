@@ -42,7 +42,7 @@ interface FormData {
   urgent: boolean
 }
 
-const RATION_ITEMS = [
+export const RATION_ITEMS = [
   { id: 'dry_rations', label: 'Dry rations (rice, dhal, canned food)', icon: '🍚' },
   { id: 'ready_meals', label: 'Ready‑to‑eat meals', icon: '🍱' },
   { id: 'milk_powder', label: 'Milk powder / baby food', icon: '🥛' },
