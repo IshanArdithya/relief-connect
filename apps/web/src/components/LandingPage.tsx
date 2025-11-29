@@ -35,11 +35,14 @@ import {
   Mail,
   LogOut,
   ArrowRight,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react'
 import LanguageSwitcher from './LanguageSwitcher'
 import { HelpRequestResponseDto } from '@nx-mono-repo-deployment-test/shared/src/dtos/help-request/response/help_request_response_dto'
 import { IHelpRequestSummary } from '@nx-mono-repo-deployment-test/shared/src/interfaces/help-request/IHelpRequestSummary'
 import { Urgency } from '@nx-mono-repo-deployment-test/shared/src/enums'
+import { RATION_ITEMS } from './EmergencyRequestForm'
 import {
   SRI_LANKA_PROVINCES,
   SRI_LANKA_DISTRICTS,
@@ -672,7 +675,7 @@ export default function LandingPage() {
                 </div>
 
                 {/* Analytics for Requests */}
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-4">
                   <div className="bg-blue-50 p-4 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
                       <AlertCircle className="h-4 w-4 text-blue-600" />
@@ -691,17 +694,6 @@ export default function LandingPage() {
                     </div>
                     <div className="text-2xl font-bold text-green-900">
                       {requestsAnalytics.totalPeople}
-                    </div>
-                  </div>
-                  <div className="bg-purple-50 p-4 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Package className="h-4 w-4 text-purple-600" />
-                      <span className="text-xs font-medium text-purple-600">
-                        {t('mealsNeeded')}
-                      </span>
-                    </div>
-                    <div className="text-2xl font-bold text-purple-900">
-                      {requestsAnalytics.totalMealsNeeded}
                     </div>
                   </div>
                   <div className="bg-orange-50 p-4 rounded-lg">
@@ -734,6 +726,93 @@ export default function LandingPage() {
                     </div>
                   </div>
                 </div>
+
+                {/* Detailed summary from API (without locations) */}
+                {summary && (
+                  <div className="space-y-3 mb-4 text-xs text-gray-700">
+                    {/* Urgency & Status */}
+                    <div className="bg-white/60 rounded-lg p-3 border border-gray-100">
+                      <div className="font-semibold mb-2 flex items-center justify-between">
+                        <span>{t('priorityBreakdown') || 'Priority'}</span>
+                        <span className="text-[11px] text-gray-500">
+                          {t('totalRequests')}: {summary.total ?? 0}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 text-[11px]">
+                        <div className="bg-orange-50 rounded-lg px-2 py-2 flex flex-col items-start">
+                          <span className="font-semibold text-orange-700 flex items-center gap-1">
+                            <span className="w-2 h-2 rounded-full bg-orange-500"></span>
+                            {t('medium')}
+                          </span>
+                          <span className="text-lg font-bold text-orange-700">
+                            {summary.byUrgency?.Medium ?? 0}
+                          </span>
+                        </div>
+                        <div className="bg-red-50 rounded-lg px-2 py-2 flex flex-col items-start">
+                          <span className="font-semibold text-red-700 flex items-center gap-1">
+                            <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                            {t('high')}
+                          </span>
+                          <span className="text-lg font-bold text-red-700">
+                            {summary.byUrgency?.High ?? 0}
+                          </span>
+                        </div>
+                        <div className="bg-gray-50 rounded-lg px-2 py-2 flex flex-col items-start">
+                          <span className="font-semibold text-gray-700 flex items-center gap-1">
+                            <span className="w-2 h-2 rounded-full bg-gray-400"></span>
+                            {t('open') || 'Open'}
+                          </span>
+                          <span className="text-lg font-bold text-gray-800">
+                            {summary.byStatus?.OPEN ?? 0}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Collapsible ration items as cards */}
+                    <details className="bg-white/60 rounded-lg border border-gray-100" open>
+                      <summary className="list-none cursor-pointer px-3 py-2 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-xs">
+                            {t('rationItems') || 'Items requested'}
+                          </span>
+                          <span className="text-[11px] text-gray-500">
+                            {Object.keys(summary.rationItems || {}).length} items
+                          </span>
+                        </div>
+                        <div className="flex items-center text-gray-500">
+                          <ChevronDown className="h-3 w-3" aria-hidden="true" />
+                        </div>
+                      </summary>
+                      <div className="px-3 pb-3">
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                          {Object.entries(summary.rationItems || {}).map(([itemId, count]) => {
+                            const meta = RATION_ITEMS.find((item) => item.id === itemId)
+                            const label = meta?.label || itemId
+                            const icon = meta?.icon
+
+                            return (
+                              <div
+                                key={itemId}
+                                className="bg-purple-50 border border-purple-100 rounded-lg px-2 py-2 flex flex-col gap-1"
+                              >
+                                <div className="flex items-center gap-1">
+                                  {icon && <span className="text-sm">{icon}</span>}
+                                  <span className="text-[11px] font-semibold text-purple-800 line-clamp-2">
+                                    {label}
+                                  </span>
+                                </div>
+                                <span className="text-xs font-bold text-purple-700">
+                                  ×{count as number}
+                                </span>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    </details>
+                  </div>
+                )}
 
                 {/* Level + Location controls */}
                 <div className="flex flex-wrap items-center gap-3 mb-4">
