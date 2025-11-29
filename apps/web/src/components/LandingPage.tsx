@@ -7,10 +7,10 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from 'apps/web/src/components/ui/card'
-import { Button } from 'apps/web/src/components/ui/button'
-import { Input } from 'apps/web/src/components/ui/input'
-import { Label } from 'apps/web/src/components/ui/label'
+} from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Dialog,
   DialogContent,
@@ -18,7 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from 'apps/web/src/components/ui/dialog'
+} from '@/components/ui/dialog'
 import {
   HelpCircle,
   HandHeart,

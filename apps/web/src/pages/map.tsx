@@ -6,8 +6,8 @@ import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import dynamic from 'next/dynamic'
-import { Button } from 'apps/web/src/components/ui/button'
-import { Label } from 'apps/web/src/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 import {
   Drawer,
   DrawerTrigger,
@@ -15,7 +15,7 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerFooter,
-} from 'apps/web/src/components/ui/drawer'
+} from '@/components/ui/drawer'
 import type { HelpRequestResponseDto } from '@nx-mono-repo-deployment-test/shared/src/dtos/help-request/response/help_request_response_dto'
 import type { CampResponseDto } from '@nx-mono-repo-deployment-test/shared/src/dtos/camp/response/camp_response_dto'
 import { Urgency } from '@nx-mono-repo-deployment-test/shared/src/enums'

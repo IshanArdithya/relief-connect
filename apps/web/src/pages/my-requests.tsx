@@ -3,9 +3,9 @@ import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
-import { Card, CardContent, CardHeader, CardTitle } from 'apps/web/src/components/ui/card'
-import { Button } from 'apps/web/src/components/ui/button'
-import { Label } from 'apps/web/src/components/ui/label'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from 'apps/web/src/components/ui/dialog'
+} from '@/components/ui/dialog'
 import {
   Package,
   HelpCircle,
