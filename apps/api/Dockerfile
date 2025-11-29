@@ -26,9 +26,22 @@ COPY apps/api/src ./apps/api/src
 COPY libs/shared/src ./libs/shared/src
 
 # Build shared library first
+# Run build from libs/shared directory to ensure correct output path
 RUN echo "Building shared library..." && \
-    yarn workspace @nx-mono-repo-deployment-test/shared build && \
-    echo "Shared library built successfully"
+    cd libs/shared && \
+    yarn build && \
+    cd ../.. && \
+    echo "Shared library built successfully" && \
+    echo "Checking shared library build output location..." && \
+    echo "Current directory: $(pwd)" && \
+    echo "Checking dist/libs/shared:" && \
+    ls -la dist/libs/shared/ 2>/dev/null || echo "dist/libs/shared not found" && \
+    echo "Checking if dist/libs/shared/src exists:" && \
+    ls -la dist/libs/shared/src/ 2>/dev/null || echo "dist/libs/shared/src not found" && \
+    echo "Searching for any .js files in dist:" && \
+    find dist -name "*.js" -type f 2>/dev/null | head -10 || echo "No .js files found in dist" && \
+    echo "Checking libs/shared/dist (alternative location):" && \
+    ls -la libs/shared/dist/ 2>/dev/null || echo "libs/shared/dist not found"
 
 # Build API
 WORKDIR /app/apps/api
@@ -49,19 +62,34 @@ RUN addgroup -g 1001 -S nodejs && \
 COPY --from=builder /app/apps/api/dist ./dist
 COPY --from=builder /app/apps/api/package.json ./package.json
 COPY --from=builder /app/node_modules ./node_modules
-# Copy shared library source (for package.json and structure)
+# Copy shared library source files (for reference, but we'll use compiled version)
 COPY --from=builder /app/libs/shared/package.json ./libs/shared/package.json
-COPY --from=builder /app/libs/shared/tsconfig.json ./libs/shared/tsconfig.json
-# Copy built shared library files to the src location (where symlink expects them)
-COPY --from=builder /app/dist/libs/shared/libs/shared/src ./libs/shared/src
+COPY --from=builder /app/libs/shared/src ./libs/shared/src
+# Copy shared library to node_modules so Node.js can resolve @nx-mono-repo-deployment-test/shared
+# The compiled code imports from /src/ paths, so we need to maintain that structure
+# Copy compiled JavaScript files from dist/libs/shared to maintain src/ structure
+RUN rm -rf node_modules/@nx-mono-repo-deployment-test/shared && \
+    mkdir -p node_modules/@nx-mono-repo-deployment-test/shared
+# Copy package.json and update main field to point to compiled JS file
+COPY --from=builder /app/libs/shared/package.json node_modules/@nx-mono-repo-deployment-test/shared/package.json.tmp
+RUN sed 's|"main": "src/index.ts"|"main": "src/index.js"|' node_modules/@nx-mono-repo-deployment-test/shared/package.json.tmp | \
+    sed 's|"types": "src/index.ts"|"types": "src/index.js"|' > node_modules/@nx-mono-repo-deployment-test/shared/package.json && \
+    rm node_modules/@nx-mono-repo-deployment-test/shared/package.json.tmp
+# Copy compiled JavaScript files from dist/libs/shared/libs/shared/src
+# The TypeScript compiler preserves the full path structure, so output is at dist/libs/shared/libs/shared/src/
+# We need to copy the src/ directory to maintain the import paths like @nx-mono-repo-deployment-test/shared/src/enums
+COPY --from=builder /app/dist/libs/shared/libs/shared/src node_modules/@nx-mono-repo-deployment-test/shared/src
+# Copy apps/api directory structure for .env file resolution
+# The .env.dev file will be mounted by docker-compose, but we need the directory structure
+COPY --from=builder /app/apps/api ./apps/api
 
-# Set environment
+# Set environment (PORT will be overridden by .env.dev file)
 ENV NODE_ENV=production
-ENV PORT=3013
+ENV PORT=3010
 
 USER nodejs
 
-EXPOSE 3013
+EXPOSE 3010
 
 # Note: Check actual path in dist folder
 # If nested: dist/apps/api/src/main.js or just dist/main.js

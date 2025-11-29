@@ -10,6 +10,9 @@ services:
       - "3010"
     env_file:
       - apps/api/.env.dev
+    volumes:
+      # Mount .env file so it's accessible inside container for dotenv loader
+      - ./apps/api/.env.dev:/app/apps/api/.env.dev:ro
     restart: unless-stopped
     networks:
       - npm_network

@@ -7,11 +7,11 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from 'apps/web/src/components/ui/card'
-import { Button } from 'apps/web/src/components/ui/button'
-import { Input } from 'apps/web/src/components/ui/input'
-import { Label } from 'apps/web/src/components/ui/label'
-import { Textarea } from 'apps/web/src/components/ui/textarea'
+} from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import MapLocationPicker from './MapLocationPicker'
 import { ICreateHelpRequest } from '@nx-mono-repo-deployment-test/shared/src/interfaces/help-request/ICreateHelpRequest'
 import {

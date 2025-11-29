@@ -29,12 +29,19 @@ COPY --from=deps /app/node_modules ./node_modules
 # Copy workspace configuration
 COPY package.json yarn.lock .yarnrc.yml ./
 
+# Copy shared library configuration and source (needed for TypeScript resolution)
+COPY libs/shared/package.json ./libs/shared/
+COPY libs/shared/tsconfig.json ./libs/shared/
+COPY libs/shared/project.json ./libs/shared/
+COPY libs/shared/src ./libs/shared/src
+
 # Copy application files
 COPY apps/web ./apps/web
 COPY tsconfig.base.json ./
 
+# Build Next.js app (TypeScript will be compiled automatically)
+# Note: Next.js transpiles TypeScript directly, so we don't need to build the shared library first
 WORKDIR /app/apps/web
-
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Build Next.js app (TypeScript will be compiled automatically)
@@ -53,6 +60,8 @@ RUN adduser --system --uid 1001 nextjs
 # Automatically leverage output traces to reduce image size
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
+# Copy public folder with locale files for i18n support
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/public ./apps/web/public
 
 USER nextjs
 

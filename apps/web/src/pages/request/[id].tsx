@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
-import { Card, CardContent, CardHeader, CardTitle } from 'apps/web/src/components/ui/card'
-import { Button } from 'apps/web/src/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from 'apps/web/src/components/ui/dialog'
+} from '@/components/ui/dialog'
 import {
   ArrowLeft,
   Phone,
