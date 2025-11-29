@@ -51,17 +51,22 @@ COPY --from=builder /app/apps/api/package.json ./package.json
 COPY --from=builder /app/node_modules ./node_modules
 # Copy shared library source files (package.json points to src/index.ts)
 COPY --from=builder /app/libs/shared/package.json ./libs/shared/package.json
-COPY --from=builder /app/libs/shared/tsconfig.json ./libs/shared/tsconfig.json
-# Copy built shared library files to the src location (where symlink expects them)
-COPY --from=builder /app/dist/libs/shared/libs/shared/src ./libs/shared/src
+COPY --from=builder /app/libs/shared/src ./libs/shared/src
+# Copy shared library to node_modules so Node.js can resolve @nx-mono-repo-deployment-test/shared
+# This is required for runtime module resolution
+RUN mkdir -p node_modules/@nx-mono-repo-deployment-test && \
+    cp -r libs/shared node_modules/@nx-mono-repo-deployment-test/shared
+# Copy apps/api directory structure for .env file resolution
+# The .env.dev file will be mounted by docker-compose, but we need the directory structure
+COPY --from=builder /app/apps/api ./apps/api
 
-# Set environment
+# Set environment (PORT will be overridden by .env.dev file)
 ENV NODE_ENV=production
-ENV PORT=3013
+ENV PORT=3010
 
 USER nodejs
 
-EXPOSE 3013
+EXPOSE 3010
 
 # Note: Check actual path in dist folder
 # If nested: dist/apps/api/src/main.js or just dist/main.js
