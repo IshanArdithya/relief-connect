@@ -4,18 +4,18 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { HelpRequestResponseDto } from '@nx-mono-repo-deployment-test/shared/src/dtos/help-request/response/help_request_response_dto';
+import { HelpRequestResponseDto, HelpRequestWithOwnershipResponseDto } from '@nx-mono-repo-deployment-test/shared/src/dtos/help-request/response';
 import { DonationWithDonatorResponseDto } from '@nx-mono-repo-deployment-test/shared/src/dtos/donation/response/donation_with_donator_response_dto';
 import { ICreateDonation } from '@nx-mono-repo-deployment-test/shared/src/interfaces/donation/ICreateDonation';
 import { donationService } from '../services';
 import { RATION_ITEMS } from './EmergencyRequestForm';
 
 interface DonationInteractionModalProps {
-  helpRequest: HelpRequestResponseDto;
+  helpRequest: HelpRequestResponseDto | HelpRequestWithOwnershipResponseDto;
   isOpen: boolean;
   onClose: () => void;
   currentUserId?: number;
-  isOwner?: boolean;
+  isOwner?: boolean; // Can be passed explicitly or determined from helpRequest.isOwner if HelpRequestWithOwnershipResponseDto
 }
 
 export default function DonationInteractionModal({
@@ -23,8 +23,10 @@ export default function DonationInteractionModal({
   isOpen,
   onClose,
   currentUserId,
-  isOwner = false,
+  isOwner: isOwnerProp = false,
 }: DonationInteractionModalProps) {
+  // Use isOwner from helpRequest if available (backend-determined), otherwise use prop
+  const isOwner = 'isOwner' in helpRequest ? helpRequest.isOwner : isOwnerProp;
   const [donations, setDonations] = useState<DonationWithDonatorResponseDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);

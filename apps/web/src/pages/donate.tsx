@@ -1,103 +1,132 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
-import DonationForm from '../components/DonationForm'
-import { HelpRequestCategory, Urgency } from '@nx-mono-repo-deployment-test/shared/src/enums'
+import { Button } from '../components/ui/button'
+import { Card, CardContent } from '../components/ui/card'
+import { AlertCircle, ArrowLeft, Loader2 } from 'lucide-react'
+import DonationInteractionModal from '../components/DonationInteractionModal'
+import { HelpRequestWithOwnershipResponseDto } from '@nx-mono-repo-deployment-test/shared/src/dtos/help-request/response/help_request_with_ownership_response_dto'
+import { helpRequestService } from '../services'
 
 export default function DonatePage() {
   const router = useRouter()
-  const { requestId, userName, category, urgency, items, location } = router.query
+  const { requestId } = router.query
+  const [helpRequest, setHelpRequest] = useState<HelpRequestWithOwnershipResponseDto | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [currentUserId, setCurrentUserId] = useState<number | undefined>(undefined)
+  const [showModal, setShowModal] = useState(true)
 
-  // Parse items from the request
-  const parseRequestItems = (itemsString: string): string[] => {
-    if (!itemsString) return []
-    // Parse items like "Food & Water (3), Torch (2), Medicine (1)"
-    const itemsList: string[] = []
-    const matches = itemsString.match(/([^,()]+)\((\d+)\)/g)
-    if (matches) {
-      matches.forEach((match) => {
-        const itemName = match.split('(')[0].trim()
-        itemsList.push(itemName)
-      })
-    } else {
-      // Fallback: split by comma if no parentheses
-      itemsString.split(',').forEach((item) => {
-        const trimmed = item.trim()
-        if (trimmed) itemsList.push(trimmed)
-      })
+  // Get current user ID from API if authenticated (for donation modal)
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      try {
+        if (typeof window !== 'undefined') {
+          const accessToken = localStorage.getItem('accessToken')
+          if (accessToken) {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/users/me`, {
+              headers: {
+                'Authorization': `Bearer ${accessToken}`,
+              },
+            })
+            if (response.ok) {
+              const data = await response.json()
+              if (data.success && data.data && data.data.id) {
+                setCurrentUserId(data.data.id)
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('[DonatePage] Error getting current user:', error)
+      }
     }
-    return itemsList
-  }
+    getCurrentUser()
+  }, [])
 
-  // Map request category to donation items
-  const getDonationItemsForCategory = (cat: string) => {
-    const parsedItems = parseRequestItems(items as string)
-    
-    // Base items based on category
-    const categoryItems: Record<string, Array<{ id: string; name: string; category: string }>> = {
-      [HelpRequestCategory.FOOD_WATER]: [
-        { id: '1', name: 'Clean Drinking Water', category: 'Essential Food & Water' },
-        { id: '2', name: 'Ready-to-eat Packs', category: 'Essential Food & Water' },
-        { id: '3', name: 'Canned Goods', category: 'Essential Food & Water' },
-        { id: '4', name: 'Rice & Grain', category: 'Essential Food & Water' },
-        { id: '5', name: 'Baby Formula', category: 'Essential Food & Water' },
-        { id: '6', name: 'Dry Food Items', category: 'Essential Food & Water' },
-      ],
-      [HelpRequestCategory.MEDICAL]: [
-        { id: '7', name: 'First Aid Kits', category: 'Medical Supplies' },
-        { id: '8', name: 'Prescription Medicine', category: 'Medical Supplies' },
-        { id: '9', name: 'Bandages & Dressings', category: 'Medical Supplies' },
-        { id: '10', name: 'Antiseptics', category: 'Medical Supplies' },
-        { id: '11', name: 'Pain Relievers', category: 'Medical Supplies' },
-        { id: '12', name: 'Medical Equipment', category: 'Medical Supplies' },
-      ],
-      [HelpRequestCategory.SHELTER]: [
-        { id: '13', name: 'Tents', category: 'Shelter & Housing' },
-        { id: '14', name: 'Sleeping Bags', category: 'Shelter & Housing' },
-        { id: '15', name: 'Blankets', category: 'Shelter & Housing' },
-        { id: '16', name: 'Tarpaulins', category: 'Shelter & Housing' },
-        { id: '17', name: 'Mattresses', category: 'Shelter & Housing' },
-        { id: '18', name: 'Pillows', category: 'Shelter & Housing' },
-      ],
-      [HelpRequestCategory.RESCUE]: [
-        { id: '19', name: 'Flashlights/Torches', category: 'Rescue Equipment' },
-        { id: '20', name: 'Batteries', category: 'Rescue Equipment' },
-        { id: '21', name: 'Ropes', category: 'Rescue Equipment' },
-        { id: '22', name: 'Tools', category: 'Rescue Equipment' },
-        { id: '23', name: 'Communication Devices', category: 'Rescue Equipment' },
-      ],
-    }
+  // Load help request by ID
+  useEffect(() => {
+    const loadHelpRequest = async () => {
+      if (!requestId) {
+        setError('Request ID is required')
+        setLoading(false)
+        return
+      }
 
-    // Get base items for category
-    let donationItems = categoryItems[cat] || categoryItems[HelpRequestCategory.FOOD_WATER]
+      const id = Number(requestId)
+      if (isNaN(id)) {
+        setError('Invalid request ID')
+        setLoading(false)
+        return
+      }
 
-    // If parsed items exist, prioritize matching items
-    if (parsedItems.length > 0) {
-      const matchedItems = donationItems.filter((item) =>
-        parsedItems.some((parsed) =>
-          item.name.toLowerCase().includes(parsed.toLowerCase()) ||
-          parsed.toLowerCase().includes(item.name.toLowerCase())
-        )
-      )
-      if (matchedItems.length > 0) {
-        donationItems = matchedItems
+      setLoading(true)
+      setError(null)
+      try {
+        const response = await helpRequestService.getHelpRequestById(id)
+        if (response.success && response.data) {
+          setHelpRequest(response.data)
+        } else {
+          setError(response.error || 'Help request not found')
+        }
+      } catch (err) {
+        console.error('[DonatePage] Error loading help request:', err)
+        setError(err instanceof Error ? err.message : 'Failed to load help request')
+      } finally {
+        setLoading(false)
       }
     }
 
-    return donationItems.map((item) => ({
-      ...item,
-      quantity: 0,
-    }))
+    loadHelpRequest()
+  }, [requestId])
+
+  if (loading) {
+    return (
+      <>
+        <Head>
+          <title>Make a Donation - Sri Lanka Crisis Help</title>
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+        </Head>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 mx-auto mb-4 text-blue-600 animate-spin" />
+            <p className="text-gray-600">Loading help request...</p>
+          </div>
+        </div>
+      </>
+    )
   }
 
-  const requestDetails = {
-    userName: (userName as string) || 'Anonymous',
-    category: (category as string) || HelpRequestCategory.FOOD_WATER,
-    urgency: (urgency as string) || Urgency.MEDIUM,
-    location: (location as string) || 'Unknown',
-    items: parseRequestItems(items as string),
-    whenNeeded: 'As soon as possible',
+  if (error || !helpRequest) {
+    return (
+      <>
+        <Head>
+          <title>Make a Donation - Sri Lanka Crisis Help</title>
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+        </Head>
+        <div className="min-h-screen bg-gray-50">
+          <div className="container mx-auto px-4 py-8">
+            <Card>
+              <CardContent className="py-12 text-center">
+                <AlertCircle className="h-12 w-12 mx-auto mb-4 text-red-500" />
+                <h1 className="text-2xl font-bold text-gray-900 mb-2">Error</h1>
+                <p className="text-gray-600 mb-6">{error || 'Help request not found'}</p>
+                <div className="flex gap-4 justify-center">
+                  <Button variant="outline" onClick={() => router.push('/requests')}>
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Back to Requests
+                  </Button>
+                  <Button onClick={() => router.push('/')}>
+                    Go to Home
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </>
+    )
   }
 
   return (
@@ -106,16 +135,44 @@ export default function DonatePage() {
         <title>Make a Donation - Sri Lanka Crisis Help</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
-      <DonationForm
-        userName={requestDetails.userName}
-        requestDetails={{
-          foods: requestDetails.items.length > 0 ? requestDetails.items : ['Various Items'],
-          whenNeeded: requestDetails.whenNeeded,
-          urgency: requestDetails.urgency,
-        }}
-        donationItems={getDonationItemsForCategory(requestDetails.category)}
-        requestId={requestId as string}
-      />
+      <div className="min-h-screen bg-gray-50">
+        <div className="container mx-auto px-4 py-6">
+          <div className="mb-6">
+            <Button variant="ghost" onClick={() => router.push('/requests')}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Requests
+            </Button>
+          </div>
+          <Card>
+            <CardContent className="p-6">
+              <div className="text-center mb-6">
+                <h1 className="text-2xl font-bold text-gray-900 mb-2">Make a Donation</h1>
+                <p className="text-gray-600">
+                  Help request from {helpRequest.approxArea || 'Unknown location'}
+                </p>
+              </div>
+              <div className="text-center">
+                <Button onClick={() => setShowModal(true)} size="lg">
+                  Open Donation Form
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {helpRequest && (
+        <DonationInteractionModal
+          helpRequest={helpRequest}
+          isOpen={showModal}
+          onClose={() => {
+            setShowModal(false)
+            router.push('/requests')
+          }}
+          currentUserId={currentUserId}
+          isOwner={helpRequest.isOwner}
+        />
+      )}
     </>
   )
 }

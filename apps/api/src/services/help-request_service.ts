@@ -1,5 +1,5 @@
 import { HelpRequestDao } from '../dao';
-import { CreateHelpRequestDto, HelpRequestResponseDto } from '@nx-mono-repo-deployment-test/shared/src/dtos/help-request';
+import { CreateHelpRequestDto, HelpRequestResponseDto, HelpRequestWithOwnershipResponseDto } from '@nx-mono-repo-deployment-test/shared/src/dtos/help-request';
 import { IApiResponse, IHelpRequestSummary } from '@nx-mono-repo-deployment-test/shared/src/interfaces';
 import { Urgency } from '@nx-mono-repo-deployment-test/shared/src/enums';
 
@@ -52,8 +52,13 @@ class HelpRequestService {
 
   /**
    * Get help request by ID
+   * @param id - The help request ID
+   * @param requesterUserId - Optional user ID of the requester (to determine ownership)
    */
-  public async getHelpRequestById(id: number): Promise<IApiResponse<HelpRequestResponseDto>> {
+  public async getHelpRequestById(
+    id: number,
+    requesterUserId?: number
+  ): Promise<IApiResponse<HelpRequestWithOwnershipResponseDto>> {
     try {
       const helpRequest = await this.helpRequestDao.findById(id);
 
@@ -64,9 +69,12 @@ class HelpRequestService {
         };
       }
 
+      // Determine if requester is the owner
+      const isOwner = requesterUserId !== undefined && helpRequest.userId === requesterUserId;
+
       return {
         success: true,
-        data: new HelpRequestResponseDto(helpRequest),
+        data: new HelpRequestWithOwnershipResponseDto(helpRequest, isOwner),
       };
     } catch (error) {
       console.error(`Error in HelpRequestService.getHelpRequestById (${id}):`, error);

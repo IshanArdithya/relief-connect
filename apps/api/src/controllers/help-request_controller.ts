@@ -50,6 +50,7 @@ class HelpRequestController {
   /**
    * GET /api/help-requests/:id
    * Get a single help request by ID
+   * Ownership is determined by the backend based on authenticated user
    */
   getHelpRequestById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
@@ -59,7 +60,10 @@ class HelpRequestController {
         return;
       }
 
-      const result = await this.helpRequestService.getHelpRequestById(id);
+      // Get requester user ID if authenticated (to determine ownership)
+      const requesterUserId = req.user?.id;
+
+      const result = await this.helpRequestService.getHelpRequestById(id, requesterUserId);
 
       if (result.success && result.data) {
         res.sendSuccess(result.data, result.message, 200);
