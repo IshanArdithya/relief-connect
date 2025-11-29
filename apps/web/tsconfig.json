@@ -23,7 +23,7 @@
     "paths": {
       "@/*": ["./src/*"],
       "@nx-mono-repo-deployment-test/shared": ["../../libs/shared/src/index.ts"],
-      "@nx-mono-repo-deployment-test/shared/*": ["../../libs/shared/src/*"]
+      "@nx-mono-repo-deployment-test/shared/*": ["../../libs/shared/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
   i18n: nextI18nextConfig.i18n,
   webpack: (config, { isServer }) => {
     // Resolve shared library paths for webpack
-    // Point to libs/shared so that @nx-mono-repo-deployment-test/shared/src/... resolves correctly
+    // The alias handles the base path, wildcard paths are resolved relative to this
     config.resolve.alias = {
       ...config.resolve.alias,
       '@nx-mono-repo-deployment-test/shared': path.resolve(__dirname, '../../libs/shared'),
