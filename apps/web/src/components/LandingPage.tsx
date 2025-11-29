@@ -63,19 +63,8 @@ export default function LandingPage() {
   const [helpRequests, setHelpRequests] = useState<HelpRequestResponseDto[]>([])
   const [summary, setSummary] = useState<IHelpRequestSummary | null>(null)
   const [summaryLoading, setSummaryLoading] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [tempFilters, setTempFilters] = useState<{
-    province?: string
-    district?: string
-    emergencyLevel?: Urgency
-    type?: 'individual' | 'group'
-  }>({})
-  const [appliedFilters, setAppliedFilters] = useState<{
-    province?: string
-    district?: string
-    emergencyLevel?: Urgency
-    type?: 'individual' | 'group'
-  }>({})
+  const [selectedLevel, setSelectedLevel] = useState<Urgency | undefined>(undefined)
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
   const [selectedRequest, setSelectedRequest] = useState<HelpRequestResponseDto | null>(null)
 
   // Check for existing authentication
@@ -335,60 +324,38 @@ export default function LandingPage() {
   const filteredRequests = useMemo(() => {
     let filtered = requestsWithMockCoords
 
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase()
-      filtered = filtered.filter(
-        (request) =>
-          request.shortNote?.toLowerCase().includes(query) ||
-          request.approxArea?.toLowerCase().includes(query) ||
-          request.contact?.toLowerCase().includes(query)
-      )
+    // Filter by selected priority level (Medium / High)
+    if (selectedLevel) {
+      filtered = filtered.filter((request) => request.urgency === selectedLevel)
     }
 
-    if (appliedFilters.district) {
-      filtered = filtered.filter((request) =>
-        request.approxArea?.toLowerCase().includes(appliedFilters.district!.toLowerCase())
-      )
-    }
+    // If we have the user's location, sort requests by distance (nearest first)
+    if (userLocation) {
+      const { lat: userLat, lng: userLng } = userLocation
 
-    if (appliedFilters.province && !appliedFilters.district) {
-      const districts = SRI_LANKA_DISTRICTS[appliedFilters.province] || []
-      filtered = filtered.filter((request) =>
-        districts.some((district) =>
-          request.approxArea?.toLowerCase().includes(district.toLowerCase())
-        )
-      )
-    }
+      const distanceSq = (req: HelpRequestResponseDto) => {
+        const lat = Number(req.lat)
+        const lng = Number(req.lng)
+        if (Number.isNaN(lat) || Number.isNaN(lng)) return Number.POSITIVE_INFINITY
+        const dLat = lat - userLat
+        const dLng = lng - userLng
+        return dLat * dLat + dLng * dLng
+      }
 
-    if (appliedFilters.emergencyLevel) {
-      filtered = filtered.filter((request) => request.urgency === appliedFilters.emergencyLevel)
-    }
-
-    if (appliedFilters.type === 'individual') {
-      filtered = filtered.filter((request) => {
-        const peopleCount = request.totalPeople || (() => {
-          const peopleMatch = request.shortNote?.match(/People:\s*(\d+)/)
-          return peopleMatch ? parseInt(peopleMatch[1]) : 1
-        })()
-        return peopleCount <= 10
-      })
-    } else if (appliedFilters.type === 'group') {
-      filtered = filtered.filter((request) => {
-        const peopleCount = request.totalPeople || (() => {
-          const peopleMatch = request.shortNote?.match(/People:\s*(\d+)/)
-          return peopleMatch ? parseInt(peopleMatch[1]) : 1
-        })()
-        return peopleCount > 10
-      })
+      filtered = [...filtered].sort((a, b) => distanceSq(a) - distanceSq(b))
     }
 
     return filtered
-  }, [requestsWithMockCoords, searchQuery, appliedFilters])
+  }, [requestsWithMockCoords, selectedLevel, userLocation])
 
-  // Calculate analytics for requests section - prefer summary API data when available
+  // Calculate analytics for requests section
+  // - When NO level or location is applied: use summary API data (overall picture)
+  // - When level or location is applied: use filteredRequests so cards match the list
   const requestsAnalytics = useMemo(() => {
-    // If summary from API is available, use it directly
-    if (summary) {
+    const hasActiveFilters = !!selectedLevel || !!userLocation
+
+    // If there are no active filters and summary from API is available, use it directly
+    if (!hasActiveFilters && summary) {
       const mealsPerPersonPerDay = 3
       // Total people should include elders and children as well
       const totalPeopleFromSummary =
@@ -417,7 +384,8 @@ export default function LandingPage() {
       }
     }
 
-    // Fallback: calculate from filtered requests
+    // Fallback: calculate from filtered requests (used when filters/search are applied
+    // or when summary is not available)
     const totalRequests = filteredRequests.length
     const totalPeople = filteredRequests.reduce((sum, req) => {
       // Use real API field first, fallback to parsing shortNote
@@ -481,15 +449,7 @@ export default function LandingPage() {
       donationsDone,
       primaryLocation,
     }
-  }, [filteredRequests, summary])
-
-  const availableDistricts = tempFilters.province
-    ? SRI_LANKA_DISTRICTS[tempFilters.province] || []
-    : Object.values(SRI_LANKA_DISTRICTS).flat()
-
-  const handleApplyFilters = () => {
-    setAppliedFilters({ ...tempFilters })
-  }
+  }, [filteredRequests, summary, selectedLevel, userLocation])
 
   const handleNeedHelp = () => {
     router.push('/need-help')
@@ -499,6 +459,27 @@ export default function LandingPage() {
     if (requestsSectionRef.current) {
       requestsSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
+  }
+
+  const handleUseMyLocation = () => {
+    if (typeof window === 'undefined' || !navigator.geolocation) {
+      console.error('[LandingPage] Geolocation not supported')
+      return
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords
+        setUserLocation({ lat: latitude, lng: longitude })
+      },
+      (error) => {
+        console.error('[LandingPage] Geolocation error for sorting requests:', error)
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+      }
+    )
   }
 
   const handleViewMap = () => {
@@ -754,98 +735,42 @@ export default function LandingPage() {
                   </div>
                 </div>
 
-                {/* Filters */}
+                {/* Level + Location controls */}
                 <div className="flex flex-wrap items-center gap-3 mb-4">
                   <div className="flex items-center gap-2">
                     <Filter className="h-4 w-4 text-gray-600" />
                     <span className="text-sm font-medium text-gray-700">{t('filters')}:</span>
                   </div>
 
-                  <div className="relative flex-1 min-w-[200px]">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                      placeholder={t('searchRequests')}
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10 h-9"
-                    />
-                  </div>
-
-                  <select
-                    className="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm min-w-[150px]"
-                    value={tempFilters.province || ''}
-                    onChange={(e) => {
-                      const province = e.target.value || undefined
-                      setTempFilters({
-                        ...tempFilters,
-                        province,
-                        district: undefined,
-                      })
-                    }}
-                  >
-                    <option value="">{t('allProvinces')}</option>
-                    {SRI_LANKA_PROVINCES.map((province) => (
-                      <option key={province} value={province}>
-                        {province}
-                      </option>
-                    ))}
-                  </select>
-
-                  <select
-                    className="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm min-w-[150px]"
-                    value={tempFilters.district || ''}
-                    onChange={(e) =>
-                      setTempFilters({
-                        ...tempFilters,
-                        district: e.target.value || undefined,
-                      })
-                    }
-                    disabled={!tempFilters.province}
-                  >
-                    <option value="">{t('allDistricts')}</option>
-                    {availableDistricts.map((district) => (
-                      <option key={district} value={district}>
-                        {district}
-                      </option>
-                    ))}
-                  </select>
-
                   <select
                     className="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm min-w-[130px]"
-                    value={tempFilters.emergencyLevel || ''}
+                    value={selectedLevel || ''}
                     onChange={(e) =>
-                      setTempFilters({
-                        ...tempFilters,
-                        emergencyLevel: e.target.value ? (e.target.value as Urgency) : undefined,
-                      })
+                      setSelectedLevel(
+                        e.target.value ? (e.target.value as Urgency) : undefined
+                      )
                     }
                   >
                     <option value="">{t('allLevels')}</option>
-                    <option value={Urgency.LOW}>{t('low')}</option>
                     <option value={Urgency.MEDIUM}>{t('medium')}</option>
                     <option value={Urgency.HIGH}>{t('high')}</option>
                   </select>
 
-                  <select
-                    className="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm min-w-[120px]"
-                    value={tempFilters.type || ''}
-                    onChange={(e) =>
-                      setTempFilters({
-                        ...tempFilters,
-                        type: e.target.value
-                          ? (e.target.value as 'individual' | 'group')
-                          : undefined,
-                      })
-                    }
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-9"
+                    onClick={handleUseMyLocation}
                   >
-                    <option value="">{t('allTypes')}</option>
-                    <option value="individual">{t('individual')}</option>
-                    <option value="group">{t('group')}</option>
-                  </select>
-
-                  <Button onClick={handleApplyFilters} size="sm" className="h-9">
-                    {t('applyFilters')}
+                    {t('My Location')}
                   </Button>
+
+                  {userLocation && (
+                    <span className="text-xs text-gray-500">
+                      {t('sortedByNearest')}
+                    </span>
+                  )}
                 </div>
               </CardHeader>
             </Card>
