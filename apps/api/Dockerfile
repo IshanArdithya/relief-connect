@@ -28,7 +28,15 @@ COPY libs/shared/src ./libs/shared/src
 # Build shared library first
 RUN echo "Building shared library..." && \
     yarn workspace @nx-mono-repo-deployment-test/shared build && \
-    echo "Shared library built successfully"
+    echo "Shared library built successfully" && \
+    echo "Checking shared library build output location..." && \
+    echo "Current directory: $(pwd)" && \
+    echo "Checking dist/libs/shared:" && \
+    ls -la dist/libs/shared/ 2>/dev/null || echo "dist/libs/shared not found" && \
+    echo "Checking if dist/libs/shared/src exists:" && \
+    ls -la dist/libs/shared/src/ 2>/dev/null || echo "dist/libs/shared/src not found" && \
+    echo "Searching for any .js files in dist:" && \
+    find dist -name "*.js" -type f 2>/dev/null | head -10 || echo "No .js files found in dist"
 
 # Build API
 WORKDIR /app/apps/api
@@ -60,7 +68,8 @@ RUN rm -rf node_modules/@nx-mono-repo-deployment-test/shared && \
 COPY --from=builder /app/libs/shared/package.json node_modules/@nx-mono-repo-deployment-test/shared/package.json
 # Copy compiled JavaScript files but maintain src/ directory structure for imports
 # The imports use @nx-mono-repo-deployment-test/shared/src/enums, so we need src/ with .js files
-# Shared library builds to dist/libs/shared/src (preserving src/ structure)
+# First try to copy from dist (compiled JS), if that fails the build will show us where files actually are
+# Note: The shared library build output should be at dist/libs/shared/src/
 COPY --from=builder /app/dist/libs/shared/src node_modules/@nx-mono-repo-deployment-test/shared/src
 # Copy apps/api directory structure for .env file resolution
 # The .env.dev file will be mounted by docker-compose, but we need the directory structure
