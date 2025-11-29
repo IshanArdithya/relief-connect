@@ -928,12 +928,18 @@ export default function LandingPage() {
                                   className="font-medium text-blue-600 hover:underline truncate"
                                   onClick={(e) => e.stopPropagation()}
                                 >
-                                  {request.approxArea ||
-                                    `${Number(request.lat).toFixed(6)}, ${Number(request.lng).toFixed(6)}`}
+                                  <span className="text-xs text-gray-500 italic">Click to view on map: </span>
+                                  <span className="text-blue-600">
+                                    {request.approxArea && !request.approxArea.match(/^-?\d+\.\d+,\s*-?\d+\.\d+/) 
+                                      ? request.approxArea 
+                                      : 'View on map'}
+                                  </span>
                                 </a>
                               ) : (
                                 <span className="font-medium truncate">
-                                  {request.approxArea || 'Unknown location'}
+                                  {request.approxArea && !request.approxArea.match(/^-?\d+\.\d+,\s*-?\d+\.\d+/)
+                                    ? request.approxArea 
+                                    : 'Unknown location'}
                                 </span>
                               )}
                             </div>
