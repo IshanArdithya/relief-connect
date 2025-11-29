@@ -34,7 +34,7 @@ declare module 'class-validator' {
   export function IsIn(...args: any[]): PropertyDecorator;
   export function IsNotIn(...args: any[]): PropertyDecorator;
   export function IsUrl(...args: any[]): PropertyDecorator;
-  export function ValidateIf(...args: any[]): PropertyDecorator;
+  export function ValidateIf(condition: (object: any, value: any) => boolean, options?: any): PropertyDecorator;
   
   // Validation functions
   export function validate(object: object, validatorOptions?: any): Promise<any[]>;
