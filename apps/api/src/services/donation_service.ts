@@ -67,7 +67,7 @@ class DonationService {
   /**
    * Get all donations for a help request
    * @param helpRequestId - The help request ID
-   * @param requesterUserId - Optional user ID of the requester (to check if they're the owner)
+   * @param requesterUserId - Optional user ID of the requester (to check if they're the owner or donator)
    */
   public async getDonationsByHelpRequestId(
     helpRequestId: number,
@@ -87,7 +87,12 @@ class DonationService {
       const isOwner = requesterUserId !== undefined && helpRequest.userId === requesterUserId;
 
       const donations = await this.donationDao.findByHelpRequestId(helpRequestId);
-      const donationDtos = donations.map(d => new DonationWithDonatorResponseDto(d, isOwner));
+      const donationDtos = donations.map(d => {
+        // Show contact info if requester is owner OR if requester is the donator
+        const isDonator = requesterUserId !== undefined && d.donatorId === requesterUserId;
+        const showContactInfo = isOwner || isDonator;
+        return new DonationWithDonatorResponseDto(d, showContactInfo);
+      });
 
       return {
         success: true,
@@ -140,6 +145,8 @@ class DonationService {
       const donation = await this.donationDao.create(
         createDonationDto.helpRequestId,
         donatorId,
+        createDonationDto.donatorName,
+        createDonationDto.donatorMobileNumber,
         createDonationDto.rationItems
       );
 

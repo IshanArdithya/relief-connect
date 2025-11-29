@@ -7,6 +7,8 @@ export class DonationResponseDto implements IDonation {
   id: number;
   helpRequestId: number;
   donatorId: number;
+  donatorName: string;
+  donatorMobileNumber: string;
   rationItems: Record<string, number>;
   donatorMarkedScheduled: boolean;
   donatorMarkedCompleted: boolean;
@@ -18,6 +20,8 @@ export class DonationResponseDto implements IDonation {
     this.id = donation.id!;
     this.helpRequestId = donation.helpRequestId;
     this.donatorId = donation.donatorId;
+    this.donatorName = donation.donatorName;
+    this.donatorMobileNumber = donation.donatorMobileNumber;
     this.rationItems = donation.rationItems;
     this.donatorMarkedScheduled = donation.donatorMarkedScheduled || false;
     this.donatorMarkedCompleted = donation.donatorMarkedCompleted || false;

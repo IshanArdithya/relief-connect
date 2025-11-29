@@ -13,6 +13,8 @@ export default class DonationModel extends Model<IDonation> implements IDonation
   public static readonly DONATION_ID = 'id';
   public static readonly DONATION_HELP_REQUEST_ID = 'helpRequestId';
   public static readonly DONATION_DONATOR_ID = 'donatorId';
+  public static readonly DONATION_DONATOR_NAME = 'donatorName';
+  public static readonly DONATION_DONATOR_MOBILE_NUMBER = 'donatorMobileNumber';
   public static readonly DONATION_RATION_ITEMS = 'rationItems';
   public static readonly DONATION_DONATOR_MARKED_SCHEDULED = 'donatorMarkedScheduled';
   public static readonly DONATION_DONATOR_MARKED_COMPLETED = 'donatorMarkedCompleted';
@@ -52,6 +54,20 @@ export default class DonationModel extends Model<IDonation> implements IDonation
 
   @BelongsTo(() => UserModel)
   donator?: UserModel;
+
+  @Column({
+    type: DataType.STRING(100),
+    allowNull: false,
+    field: DonationModel.DONATION_DONATOR_NAME,
+  })
+  donatorName!: string;
+
+  @Column({
+    type: DataType.STRING(20),
+    allowNull: false,
+    field: DonationModel.DONATION_DONATOR_MOBILE_NUMBER,
+  })
+  donatorMobileNumber!: string;
 
   @Column({
     type: DataType.JSONB,

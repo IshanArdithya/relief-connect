@@ -87,12 +87,16 @@ class DonationDao {
   public async create(
     helpRequestId: number,
     donatorId: number,
+    donatorName: string,
+    donatorMobileNumber: string,
     rationItems: Record<string, number>
   ): Promise<IDonation> {
     try {
       const donation = await DonationModel.create({
         [DonationModel.DONATION_HELP_REQUEST_ID]: helpRequestId,
         [DonationModel.DONATION_DONATOR_ID]: donatorId,
+        [DonationModel.DONATION_DONATOR_NAME]: donatorName,
+        [DonationModel.DONATION_DONATOR_MOBILE_NUMBER]: donatorMobileNumber,
         [DonationModel.DONATION_RATION_ITEMS]: rationItems,
         [DonationModel.DONATION_DONATOR_MARKED_SCHEDULED]: false,
         [DonationModel.DONATION_DONATOR_MARKED_COMPLETED]: false,

@@ -6,6 +6,8 @@ export interface IDonation {
   id?: number;
   helpRequestId: number; // The help request this donation is for
   donatorId: number; // The user (donator) making the donation
+  donatorName: string; // Donator's name for contacting
+  donatorMobileNumber: string; // Donator's mobile number for contacting
   rationItems: Record<string, number>; // Map of ration item IDs to counts (e.g., { 'dry_rations': 5, 'bottled_water': 10 })
   donatorMarkedScheduled?: boolean; // Whether donator marked as scheduled
   donatorMarkedCompleted?: boolean; // Whether donator marked as completed
