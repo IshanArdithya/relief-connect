@@ -72,15 +72,11 @@ export default function CampDetailsPage() {
   useEffect(() => {
     if (authLoading) return;
     
-    if (!isAuthenticated) {
-      router.push('/login');
-      return;
-    }
-
+    // Allow viewing camp details without authentication
     if (id) {
       loadCamp();
     }
-  }, [id, isAuthenticated, authLoading, router, loadCamp]);
+  }, [id, authLoading, loadCamp]);
 
   // Scroll to drop-off locations section if tab=dropoff query param is present
   useEffect(() => {

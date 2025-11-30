@@ -43,13 +43,9 @@ export default function CampsPage() {
   useEffect(() => {
     if (authLoading) return;
 
-    if (!isAuthenticated) {
-      router.push('/login');
-      return;
-    }
-
+    // Allow viewing camps without authentication
     loadData();
-  }, [isAuthenticated, authLoading, router]);
+  }, [authLoading]);
 
   const loadData = async () => {
     setLoading(true);
@@ -123,6 +119,10 @@ export default function CampsPage() {
   }, [camps, searchTerm]);
 
   const handleDonateClick = (camp: CampWithClub) => {
+    if (!isAuthenticated) {
+      router.push('/login');
+      return;
+    }
     setSelectedCamp(camp);
     setShowDonationModal(true);
   };
@@ -144,8 +144,6 @@ export default function CampsPage() {
       </>
     );
   }
-
-  if (!isAuthenticated) return null; // Redirect handled by useEffect
 
   return (
     <>
@@ -353,7 +351,7 @@ export default function CampsPage() {
                           </div>
                         )}
                         <Button
-                          onClick={() => router.push(`/clubs/camps/${camp.id}`)}
+                          onClick={() => router.push(`/camps/${camp.id}`)}
                           className="w-full mt-2 h-9 sm:h-10 text-xs sm:text-sm"
                           variant="outline"
                         >
