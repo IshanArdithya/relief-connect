@@ -181,14 +181,18 @@ export default function LandingPage() {
 
       const response = await helpRequestService.getAllHelpRequests(filters)
       if (response.success && response.data) {
-        // Append new items to existing ones
-        setHelpRequests((prev) => [...prev, ...response.data])
-        setCurrentPage(nextPage)
-        console.log('[LandingPage] Loaded more requests:', {
-          page: nextPage,
-          itemsOnPage: response.data.length,
-          totalLoaded: helpRequests.length + response.data.length,
-        })
+        // Extract data to ensure TypeScript knows it's an array
+        const newItems = response.data
+        if (Array.isArray(newItems)) {
+          // Append new items to existing ones
+          setHelpRequests((prev) => [...prev, ...newItems])
+          setCurrentPage(nextPage)
+          console.log('[LandingPage] Loaded more requests:', {
+            page: nextPage,
+            itemsOnPage: newItems.length,
+            totalLoaded: helpRequests.length + newItems.length,
+          })
+        }
       } else {
         console.error('[LandingPage] Failed to load more requests:', response.error)
       }
@@ -1225,17 +1229,42 @@ export default function LandingPage() {
                                 <Package className="h-3.5 w-3.5" />
                                 Items Needed
                               </div>
-                              <div className="flex flex-wrap gap-2">
-                                {rationItemsList.map((item) => (
-                                  <div
-                                    key={item.id}
-                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-md text-xs font-medium transition-colors duration-200"
-                                  >
-                                    <span>{item.icon}</span>
-                                    <span>{item.label}</span>
+                              {rationItemsList.length === 1 ? (
+                                // Single item - show directly
+                                <div className="flex flex-wrap gap-2">
+                                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-md text-xs font-medium transition-colors duration-200">
+                                    <span>{rationItemsList[0].icon}</span>
+                                    <span>{rationItemsList[0].label}</span>
                                   </div>
-                                ))}
-                              </div>
+                                </div>
+                              ) : (
+                                // Multiple items - show first item, rest in collapsible
+                                <div className="space-y-2">
+                                  <div className="flex flex-wrap gap-2">
+                                    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-md text-xs font-medium transition-colors duration-200">
+                                      <span>{rationItemsList[0].icon}</span>
+                                      <span>{rationItemsList[0].label}</span>
+                                    </div>
+                                  </div>
+                                  <details className="mt-1">
+                                    <summary className="cursor-pointer list-none text-xs text-purple-600 hover:text-purple-700 font-medium flex items-center gap-1 select-none">
+                                      <ChevronDown className="h-3 w-3" />
+                                      +{rationItemsList.length - 1} more item{rationItemsList.length - 1 > 1 ? 's' : ''}
+                                    </summary>
+                                    <div className="flex flex-wrap gap-2 mt-2">
+                                      {rationItemsList.slice(1).map((item) => (
+                                        <div
+                                          key={item.id}
+                                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-md text-xs font-medium transition-colors duration-200"
+                                        >
+                                          <span>{item.icon}</span>
+                                          <span>{item.label}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </details>
+                                </div>
+                              )}
                             </div>
                           ) : fallbackItems ? (
                             <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-3 border border-purple-100">
