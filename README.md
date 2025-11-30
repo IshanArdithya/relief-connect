@@ -183,9 +183,20 @@ relief-connect/
 
 📖 **[Read Full API Reference →](docs/07-api-reference.md)**
 
----
+1. **Build Docker images**
+   ```bash
+   docker-compose build
+   ```
 
-## 🤝 Contributing
+2. **Start services**
+   ```bash
+   docker-compose up -d
+   ```
+
+3. **View logs**
+   ```bash
+   docker-compose logs -f
+   ```
 
 We welcome contributions! Please see our [Contributing Guide](docs/12-contributing.md) for details.
 
@@ -200,9 +211,15 @@ We welcome contributions! Please see our [Contributing Guide](docs/12-contributi
 
 📖 **[Read Full Contributing Guide →](docs/12-contributing.md)**
 
----
+The project includes Docker Compose files for different environments:
 
-## 📝 License
+- `docker-compose.yml` - Base configuration
+- `docker-compose.dev.yml` - Development
+- `docker-compose.qa.yml` - QA environment
+- `docker-compose.staging.yml` - Staging
+- `docker-compose.prod.yml` - Production
+
+### CI/CD
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
@@ -224,7 +241,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-## 📚 Additional Resources
+## 🤝 Contributing
 
 - [Next.js Documentation](https://nextjs.org/docs)
 - [Express.js Documentation](https://expressjs.com/)
