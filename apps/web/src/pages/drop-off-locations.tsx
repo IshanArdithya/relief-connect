@@ -24,7 +24,7 @@ import {
 // Dynamically import the map component to avoid SSR issues
 const DropOffLocationsMap = dynamic(() => import('../components/DropOffLocationsMap'), { ssr: false });
 
-interface DropOffLocationWithCamp extends ICampDropOffLocation {
+interface DropOffLocationWithCamp extends Omit<ICampDropOffLocation, 'campId'> {
   campName?: string;
   campId?: number;
 }
