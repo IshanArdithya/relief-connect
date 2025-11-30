@@ -37,23 +37,20 @@ import CreateCampDonationModal from '../../components/CreateCampDonationModal'
 import Link from 'next/link'
 
 export default function VolunteerClubDashboard() {
-  const router = useRouter()
-  const { isAuthenticated, isVolunteerClub, user, loading: authLoading } = useAuth()
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [club, setClub] = useState<IVolunteerClub | null>(null)
-  const [helpRequests, setHelpRequests] = useState<IHelpRequest[]>([])
-  const [donations, setDonations] = useState<DonationWithDonatorResponseDto[]>([])
-  const [campDonations, setCampDonations] = useState<DonationWithDonatorResponseDto[]>([])
-  const [camps, setCamps] = useState<ICamp[]>([])
-  const [memberships, setMemberships] = useState<IMembership[]>([])
-  const [searchTerm, setSearchTerm] = useState('')
-  const [activeTab, setActiveTab] = useState<
-    'help-requests' | 'donations' | 'camps' | 'memberships' | 'camp-donations'
-  >('help-requests')
-  const [reviewingMembershipId, setReviewingMembershipId] = useState<number | null>(null)
-  const [acceptingDonationId, setAcceptingDonationId] = useState<number | null>(null)
-  const [showCreateDonationModal, setShowCreateDonationModal] = useState(false)
+  const router = useRouter();
+  const { isAuthenticated, isVolunteerClub, user, loading: authLoading } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [club, setClub] = useState<IVolunteerClub | null>(null);
+  const [helpRequests, setHelpRequests] = useState<IHelpRequest[]>([]);
+  const [campDonations, setCampDonations] = useState<DonationWithDonatorResponseDto[]>([]);
+  const [camps, setCamps] = useState<ICamp[]>([]);
+  const [memberships, setMemberships] = useState<IMembership[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState<'help-requests' | 'camps' | 'memberships' | 'camp-donations'>('help-requests');
+  const [reviewingMembershipId, setReviewingMembershipId] = useState<number | null>(null);
+  const [acceptingDonationId, setAcceptingDonationId] = useState<number | null>(null);
+  const [showCreateDonationModal, setShowCreateDonationModal] = useState(false);
 
   useEffect(() => {
     // Wait for auth to finish loading before checking
@@ -83,26 +80,6 @@ export default function VolunteerClubDashboard() {
       const helpRequestsResponse = await helpRequestService.getAllHelpRequests()
       if (helpRequestsResponse.success && helpRequestsResponse.data) {
         setHelpRequests(helpRequestsResponse.data)
-      }
-
-      // Load donations (we'll need to get donations from all help requests)
-      // For now, we'll show a summary - in a real implementation, you might want a dedicated endpoint
-      const donationsResponse = await helpRequestService.getAllHelpRequests()
-      if (donationsResponse.success && donationsResponse.data) {
-        // Get donations for each help request
-        const allDonations: DonationWithDonatorResponseDto[] = []
-        for (const hr of donationsResponse.data.slice(0, 10)) {
-          // Limit to first 10 for performance
-          try {
-            const hrDonations = await donationService.getDonationsByHelpRequestId(hr.id!)
-            if (hrDonations.success && hrDonations.data) {
-              allDonations.push(...hrDonations.data)
-            }
-          } catch (error) {
-            console.error(`Error loading donations for help request ${hr.id}:`, error)
-          }
-        }
-        setDonations(allDonations)
       }
 
       // Load camps
@@ -151,18 +128,8 @@ export default function VolunteerClubDashboard() {
       hr.approxArea?.toLowerCase().includes(search) ||
       hr.name?.toLowerCase().includes(search) ||
       hr.contact?.toLowerCase().includes(search)
-    )
-  })
-
-  const filteredDonations = donations.filter((d) => {
-    if (!searchTerm) return true
-    const search = searchTerm.toLowerCase()
-    return (
-      d.donatorName?.toLowerCase().includes(search) ||
-      d.donatorMobileNumber?.toLowerCase().includes(search) ||
-      d.donatorUsername?.toLowerCase().includes(search)
-    )
-  })
+    );
+  });
 
   const filteredCamps = camps.filter((c) => {
     if (!searchTerm) return true
@@ -365,22 +332,6 @@ export default function VolunteerClubDashboard() {
               <CardContent className="pt-4 sm:pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs sm:text-sm font-medium text-gray-600">Donations</p>
-                    <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
-                      {donations.length}
-                    </p>
-                  </div>
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                    <Package className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-4 sm:pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
                     <p className="text-xs sm:text-sm font-medium text-gray-600">Active Camps</p>
                     <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
                       {camps.length}
@@ -412,49 +363,42 @@ export default function VolunteerClubDashboard() {
 
           {/* Tabs */}
           <Card>
-            <CardHeader className="p-3 sm:p-4 lg:p-6">
+            <CardHeader className="p-3 sm:p-4 lg:p-6 overflow-hidden">
               <div className="flex flex-col gap-4 mb-4">
-                <div className="overflow-x-auto -mx-3 sm:-mx-4 lg:-mx-6 px-3 sm:px-4 lg:px-6">
-                  <div className="flex space-x-1 border-b border-gray-200 min-w-max sm:min-w-0 pb-1">
+                <div className="overflow-x-auto scroll-smooth -mx-3 sm:-mx-4 lg:-mx-6 px-3 sm:px-4 lg:px-6" style={{ WebkitOverflowScrolling: 'touch' }}>
+                  <div className="flex space-x-1 border-b border-gray-200 pb-1 pr-6 sm:pr-8 lg:pr-12" style={{ width: 'max-content' }}>
                     <button
                       onClick={() => setActiveTab('help-requests')}
-                      className={`px-3 sm:px-4 py-2 font-medium text-xs sm:text-sm whitespace-nowrap ${
+                      className={`px-3 sm:px-4 py-2 font-medium text-xs sm:text-sm whitespace-nowrap flex items-center justify-center flex-shrink-0 ${
                         activeTab === 'help-requests'
                           ? 'text-blue-600 border-b-2 border-blue-600'
                           : 'text-gray-600 hover:text-gray-900'
                       }`}
                     >
-                      Help Requests
-                    </button>
-                    <button
-                      onClick={() => setActiveTab('donations')}
-                      className={`px-3 sm:px-4 py-2 font-medium text-xs sm:text-sm whitespace-nowrap ${
-                        activeTab === 'donations'
-                          ? 'text-blue-600 border-b-2 border-blue-600'
-                          : 'text-gray-600 hover:text-gray-900'
-                      }`}
-                    >
-                      Donations
+                      <Users className="w-5 h-5 sm:hidden" />
+                      <span className="hidden sm:inline">Help Requests</span>
                     </button>
                     <button
                       onClick={() => setActiveTab('camps')}
-                      className={`px-3 sm:px-4 py-2 font-medium text-xs sm:text-sm whitespace-nowrap ${
+                      className={`px-3 sm:px-4 py-2 font-medium text-xs sm:text-sm whitespace-nowrap flex items-center justify-center flex-shrink-0 ${
                         activeTab === 'camps'
                           ? 'text-blue-600 border-b-2 border-blue-600'
                           : 'text-gray-600 hover:text-gray-900'
                       }`}
                     >
-                      Camps
+                      <MapPin className="w-5 h-5 sm:hidden" />
+                      <span className="hidden sm:inline">Camps</span>
                     </button>
                     <button
                       onClick={() => setActiveTab('memberships')}
-                      className={`px-3 sm:px-4 py-2 font-medium text-xs sm:text-sm whitespace-nowrap flex items-center ${
+                      className={`px-3 sm:px-4 py-2 font-medium text-xs sm:text-sm whitespace-nowrap flex items-center justify-center flex-shrink-0 ${
                         activeTab === 'memberships'
                           ? 'text-blue-600 border-b-2 border-blue-600'
                           : 'text-gray-600 hover:text-gray-900'
                       }`}
                     >
-                      Memberships
+                      <Building2 className="w-5 h-5 sm:hidden" />
+                      <span className="hidden sm:inline">Memberships</span>
                       {memberships.filter((m) => m.status === 'PENDING').length > 0 && (
                         <span className="ml-1.5 sm:ml-2 px-1.5 sm:px-2 py-0.5 text-xs bg-yellow-100 text-yellow-800 rounded-full">
                           {memberships.filter((m) => m.status === 'PENDING').length}
@@ -463,13 +407,14 @@ export default function VolunteerClubDashboard() {
                     </button>
                     <button
                       onClick={() => setActiveTab('camp-donations')}
-                      className={`px-3 sm:px-4 py-2 font-medium text-xs sm:text-sm whitespace-nowrap flex items-center ${
+                      className={`px-3 sm:px-4 py-2 font-medium text-xs sm:text-sm whitespace-nowrap flex items-center justify-center flex-shrink-0 ${
                         activeTab === 'camp-donations'
                           ? 'text-blue-600 border-b-2 border-blue-600'
                           : 'text-gray-600 hover:text-gray-900'
                       }`}
                     >
-                      Camp Donations
+                      <HandHeart className="w-5 h-5 sm:hidden" />
+                      <span className="hidden sm:inline">Camp Donations</span>
                       {campDonations.filter((d) => !d.ownerMarkedCompleted).length > 0 && (
                         <span className="ml-1.5 sm:ml-2 px-1.5 sm:px-2 py-0.5 text-xs bg-yellow-100 text-yellow-800 rounded-full">
                           {campDonations.filter((d) => !d.ownerMarkedCompleted).length}
@@ -554,7 +499,7 @@ export default function VolunteerClubDashboard() {
                             </div>
                             <div className="flex flex-row sm:flex-col gap-2 sm:ml-4 flex-shrink-0">
                               <Link
-                                href={`/help-requests/${hr.id}`}
+                                href={`/request/${hr.id}?from=dashboard`}
                                 className="flex-1 sm:flex-none"
                               >
                                 <Button
@@ -565,85 +510,6 @@ export default function VolunteerClubDashboard() {
                                   View Details
                                 </Button>
                               </Link>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))
-                  )}
-                </div>
-              )}
-
-              {/* Donations Tab */}
-              {activeTab === 'donations' && (
-                <div className="space-y-4">
-                  {filteredDonations.length === 0 ? (
-                    <div className="text-center py-12">
-                      <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-600">No donations found</p>
-                    </div>
-                  ) : (
-                    filteredDonations.map((donation) => (
-                      <Card key={donation.id} className="hover:shadow-md transition-shadow">
-                        <CardContent className="pt-4 sm:pt-6">
-                          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex flex-wrap items-center gap-2 mb-2">
-                                <h3 className="font-semibold text-base sm:text-lg break-words">
-                                  Donation from {donation.donatorName || 'Unknown'}
-                                </h3>
-                                {(donation.ownerMarkedCompleted ||
-                                  donation.donatorMarkedCompleted) && (
-                                  <span
-                                    className={`px-2 py-1 text-xs rounded flex-shrink-0 ${getStatusColor('COMPLETED')}`}
-                                  >
-                                    Completed
-                                  </span>
-                                )}
-                                {donation.donatorMarkedScheduled &&
-                                  !donation.ownerMarkedCompleted && (
-                                    <span
-                                      className={`px-2 py-1 text-xs rounded flex-shrink-0 ${getStatusColor('SCHEDULED')}`}
-                                    >
-                                      Scheduled
-                                    </span>
-                                  )}
-                              </div>
-                              <div className="space-y-2 sm:space-y-0 sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 text-xs sm:text-sm text-gray-600 mb-4">
-                                {donation.donatorName && (
-                                  <div className="break-words">
-                                    <span className="font-medium">Donator:</span>{' '}
-                                    {donation.donatorName}
-                                  </div>
-                                )}
-                                {donation.donatorMobileNumber && (
-                                  <div className="break-words">
-                                    <span className="font-medium">Mobile:</span>{' '}
-                                    <a
-                                      href={`tel:${donation.donatorMobileNumber}`}
-                                      className="text-blue-600 hover:text-blue-800 hover:underline font-semibold text-base sm:text-sm"
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
-                                      {donation.donatorMobileNumber}
-                                    </a>
-                                  </div>
-                                )}
-                                {donation.createdAt && (
-                                  <div>
-                                    <span className="font-medium">Created:</span>{' '}
-                                    {new Date(donation.createdAt).toLocaleDateString()}
-                                  </div>
-                                )}
-                              </div>
-                              {Object.keys(donation.rationItems || {}).length > 0 && (
-                                <p className="text-xs sm:text-sm text-gray-600 mb-4 break-words">
-                                  <Package className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1" />
-                                  Items:{' '}
-                                  {Object.entries(donation.rationItems)
-                                    .map(([item, qty]) => `${item} (${qty})`)
-                                    .join(', ')}
-                                </p>
-                              )}
                             </div>
                           </div>
                         </CardContent>
