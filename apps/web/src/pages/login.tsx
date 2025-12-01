@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import Head from 'next/head'
+import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -192,7 +193,7 @@ export default function LoginPage() {
               A crisis relief management platform designed to coordinate emergency assistance during natural disasters and crises.
             </p>
             <div className="bg-yellow-500/20 border border-yellow-400/50 text-white px-4 py-3 rounded-md text-sm backdrop-blur-sm max-w-2xl mx-auto">
-              <strong>Note:</strong> This login page is for <strong>Volunteer Organizations and Clubs</strong> only. Regular users can access all features directly from the <a href="/" className="underline hover:text-yellow-400 font-semibold">home page</a> without logging in.
+              <strong>Note:</strong> This login page is for <strong>Volunteer Organizations and Clubs</strong> only. Regular users can access all features directly from the <Link href="/" className="underline hover:text-yellow-400 font-semibold">home page</Link> without logging in.
             </div>
           </div>
 
@@ -264,7 +265,7 @@ export default function LoginPage() {
               </div>
               <CardTitle className="text-2xl font-bold text-white">Volunteer Organization Login</CardTitle>
               <CardDescription className="text-base mt-2 text-white/90">
-                This login is for <strong className="text-white">Volunteer Organizations and Clubs</strong> only. If you&apos;re a regular user looking for help or wanting to help, please go to the <a href="/" className="underline hover:text-yellow-400">home page</a> instead.
+                This login is for <strong className="text-white">Volunteer Organizations and Clubs</strong> only. If you&apos;re a regular user looking for help or wanting to help, please go to the <Link href="/" className="underline hover:text-yellow-400">home page</Link> instead.
               </CardDescription>
             </CardHeader>
             <CardContent>
